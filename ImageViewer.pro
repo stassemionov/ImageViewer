@@ -8,13 +8,31 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+QMAKE_CXXFLAGS += -std=c++11 -O2 -Wall
+
 TARGET = ImageViewer
 TEMPLATE = app
 
+INCLUDEPATH +=\
+    $$PWD/include
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+SOURCES +=\
+    source/main.cpp\
+    source/mainwindow.cpp \
+    source/labelviewer.cpp \
+    source/service.cpp \
+    source/history.cpp \
+    source/mainwindow_editor.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  +=\
+    include/mainwindow.h \
+    include/labelviewer.h \
+    include/service.h \
+    include/history.h
 
-FORMS    += mainwindow.ui
+FORMS    +=\
+    interface/mainwindow.ui \
+    interface/properties_dialog.ui
+
+RESOURCES += \
+    resources/resources.qrc

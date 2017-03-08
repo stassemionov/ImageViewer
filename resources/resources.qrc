@@ -1,8 +1,31 @@
 <RCC>
     <qresource prefix="/">
-        <file>main_icon.png</file>
-        <file>open_icon.png</file>
         <file>info_international.txt</file>
         <file>info_rus.txt</file>
+        <file>main_icon.png</file>
+        <file>open_icon.png</file>
+        <file>brightness_icon.png</file>
+        <file>cross_icon.png</file>
+        <file>format_icon.png</file>
+        <file>left_rot_icon.png</file>
+        <file>right_rot_icon.png</file>
+        <file>ok_icon.png</file>
+        <file>pencil_icon.png</file>
+        <file>printer_icon.png</file>
+        <file>settings_icon.png</file>
+        <file>saturation_icon.png</file>
+        <file>red_colour_icon.png</file>
+        <file>blue_colour_icon.png</file>
+        <file>green_colour_icon.png</file>
+        <file>framing_icon.png</file>
+        <file>negative_icon.png</file>
+        <file>decolorize_icon.png</file>
+        <file>cut_icon.png</file>
+        <file>text_insertion_icon.png</file>
+        <file>blur_icon.png</file>
+        <file>undo_icon.png</file>
+        <file>redo_icon.png</file>
+        <file>save_icon.png</file>
+        <file>properties_icon.png</file>
     </qresource>
 </RCC>

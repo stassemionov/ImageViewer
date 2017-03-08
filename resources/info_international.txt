@@ -1,0 +1,8 @@
+This is the simple application for images browsing.
+
+It supports such popular formats as JPG, PNG, BMP and other, which are provided by Qt.
+
+To start, You should open your image with using menu 'File->Open...' and corresponding toolbar icon.
+Application saves recently opened files, so You can find it with menu 'File->Recent pictures...'.
+
+This program provides the ability to build the RGB-histogram of the loaded picture. You can use this function with menu 'Tools->Build histogram' and corresponding toolbar icon.
