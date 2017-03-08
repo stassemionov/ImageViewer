@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main_icon.png</file>
+        <file>open_icon.png</file>
+        <file>info_international.txt</file>
+        <file>info_rus.txt</file>
+    </qresource>
+</RCC>

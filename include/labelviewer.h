@@ -1,0 +1,4 @@
+#ifndef LABLEVIEWER_H
+#define LABLEVIEWER_H
+
+#endif // LABLEVIEWER_H
