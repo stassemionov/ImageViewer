@@ -117,9 +117,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-11</y>
          <width>284</width>
-         <height>584</height>
+         <height>547</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -270,16 +270,22 @@
                   </property>
                   <item>
                    <widget class="QLabel" name="label_2">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="minimumSize">
                      <size>
-                      <width>35</width>
-                      <height>35</height>
+                      <width>30</width>
+                      <height>30</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>35</width>
-                      <height>35</height>
+                      <width>30</width>
+                      <height>30</height>
                      </size>
                     </property>
                     <property name="toolTip">
@@ -342,16 +348,22 @@
                   </property>
                   <item>
                    <widget class="QLabel" name="label_3">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="minimumSize">
                      <size>
-                      <width>35</width>
-                      <height>35</height>
+                      <width>30</width>
+                      <height>30</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>35</width>
-                      <height>35</height>
+                      <width>30</width>
+                      <height>30</height>
                      </size>
                     </property>
                     <property name="toolTip">
@@ -409,8 +421,11 @@
                 </item>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
                   <property name="bottomMargin">
-                   <number>10</number>
+                   <number>0</number>
                   </property>
                   <item>
                    <widget class="QLabel" name="label_5">
@@ -481,8 +496,11 @@
                 </item>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
                   <property name="bottomMargin">
-                   <number>10</number>
+                   <number>0</number>
                   </property>
                   <item>
                    <widget class="QLabel" name="label_6">
@@ -554,10 +572,10 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <property name="spacing">
-                   <number>10</number>
+                   <number>0</number>
                   </property>
                   <property name="bottomMargin">
-                   <number>10</number>
+                   <number>0</number>
                   </property>
                   <item>
                    <widget class="QLabel" name="label_7">
