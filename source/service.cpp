@@ -6,8 +6,9 @@
 QString loadTextFileData(const QString& filepath)
 {
     QFile file{filepath};
-    file.open(QIODevice::ReadOnly);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream stream{&file};
+    stream.setCodec("UTF-8");
     QString result = stream.readAll();
     file.close();
     return result;

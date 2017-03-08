@@ -47,11 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onImageScaled(bool)));
 
     QSettings settings{QCoreApplication::organizationName(),
-                       QString::fromLatin1("ImageViewer")};
-    if (settings.contains(QString::fromLatin1("geometry")))
+                       QString::fromUtf8("ImageViewer")};
+    if (settings.contains(QString::fromUtf8("geometry")))
     {
         restoreGeometry(settings.value(
-                        QString::fromLatin1("geometry")).toByteArray());
+                        QString::fromUtf8("geometry")).toByteArray());
     }
     else
     {
@@ -435,7 +435,7 @@ void MainWindow::closeEvent(QCloseEvent *pEvent)
 {
     pEvent->accept();
     QSettings settings{QCoreApplication::organizationName(),
-                QString::fromLatin1(("ImageViewer"))};
+                QString::fromUtf8(("ImageViewer"))};
     settings.setValue(QString::fromUtf8("geometry"), saveGeometry());
     settings.setValue(QString::fromUtf8("recent"), m_recent_files);
     settings.setValue(QString::fromUtf8("last_open_dir"), m_last_open_dir);
@@ -585,8 +585,8 @@ void MainWindow::configureInfoWidget()
     const int w = 670;
     const int h = 350;
     QString info_path = (QLocale::system().language() == QLocale::Russian) ?
-                QString::fromLatin1(":/info_rus.txt") :
-                QString::fromLatin1(":/info_international.txt");
+                QString::fromUtf8(":/info_rus.txt") :
+                QString::fromUtf8(":/info_international.txt");
 
     m_info_widget = new QWidget;
     m_info_widget->setWindowTitle(QString::fromUtf8("ImageViewer"));
