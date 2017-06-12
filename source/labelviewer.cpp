@@ -68,6 +68,6 @@ void LabelViewer::wheelEvent(QWheelEvent* event)
     if (this->pixmap() != nullptr)
     {
         event->accept();
-        emit imageScaledSignal(event->angleDelta().y() > 0);
+        emit imageScaledSignal(event);
     }
 }

@@ -32,6 +32,8 @@ public:
 //signals:
 
 protected slots:
+    void onOpenSettings();
+
     void onMouseEnterOnImage();
     void onMouseLeaveOnImage();
     void onMouseMoveOnImage(int xcoord, int ycoord);
@@ -45,18 +47,49 @@ protected slots:
     void onOpenImage();
     void onImageMoveSignal(QPoint pos);
     void onShowProperties();
-    void onImageScaled(bool direction);
+    void onImageScaled(QWheelEvent *event);
     void onUndo();
     void onRedo();
-    void onColourEdited();
+
+    void onBrightnessInc();
+    void onSaturationInc();
+    void onRedInc();
+    void onGreenInc();
+    void onBlueInc();
+    void onBrightnessDec();
+    void onSaturationDec();
+    void onRedDec();
+    void onGreenDec();
+    void onBlueDec();
+    void onBrightnessDoubleInc();
+    void onSaturationDoubleInc();
+    void onRedDoubleInc();
+    void onGreenDoubleInc();
+    void onBlueDoubleInc();
+    void onBrightnessDoubleDec();
+    void onSaturationDoubleDec();
+    void onRedDoubleDec();
+    void onGreenDoubleDec();
+    void onBlueDoubleDec();
+
     void onUncolourized();
     void onNegatived();
+
+    void onRotateLeft();
+    void onRotateRight();
 
 protected:
     // *** service methods ***
     bool loadImage(const QString &file_name);
     void configureInfoWidget();
     void updateRecentList();
+    void onRedEdited(int dif);
+    void onGreenEdited(int dif);
+    void onBlueEdited(int dif);
+    void onSaturationEdited(int dif);
+    void onBrightnessEdited(int dif);
+    // Scaling of current image with size of app's window
+    void updateScale();
 
     // *** events ***
     void closeEvent(QCloseEvent *pEvent);
@@ -71,11 +104,10 @@ private:
     // Image that is currently on the screen.
     QImage m_showed_image;
     // Image that is intermediate result of editor's work.
-    QImage* m_intermediate_image = nullptr;
-    // Image that is buffer for colour edition.
-    QImage* m_colour_buffer_image = nullptr;
+    QImage m_intermediate_image;
     // Scale of current image on the screen.
     double m_scale = 1.0;
+    double m_scale_step = 1.2;
     // Widget to show current image.
     LabelViewer m_screne_label;
     // List and widget for recent opened images.
@@ -95,8 +127,6 @@ private:
     QLabel m_pos_label;
     // Setting of application.
     QSettings settings;
-    // Action to save current image.
-    QAction * m_save_action = nullptr;
     // Signal mapper to help mode changing.
     QSignalMapper* m_mode_mapper;
     // Directories of last open/save action.
@@ -106,10 +136,6 @@ private:
     QWidget* m_info_widget = nullptr;
     // History of editor's transformations.
     EditHistory* m_edit_history = nullptr;
-    // Flag that is meaning uncolorized state of image.
-    bool m_uncolourized = false;
-    // Flag that is meaning inverted state of image.
-    bool m_negatived = false;
 };
 
 #endif // MAINWINDOW_H

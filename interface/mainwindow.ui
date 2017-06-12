@@ -62,8 +62,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>700</width>
-         <height>536</height>
+         <width>748</width>
+         <height>541</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
@@ -101,6 +101,18 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="minimumSize">
+       <size>
+        <width>250</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>250</width>
+        <height>16777215</height>
+       </size>
+      </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
@@ -117,9 +129,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-11</y>
-         <width>284</width>
-         <height>547</height>
+         <y>0</y>
+         <width>250</width>
+         <height>541</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -260,7 +272,7 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_6">
                   <property name="spacing">
-                   <number>0</number>
+                   <number>10</number>
                   </property>
                   <property name="rightMargin">
                    <number>0</number>
@@ -268,6 +280,26 @@
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
+                  <item>
+                   <widget class="QPushButton" name="edit_brightness_mmin_button">
+                    <property name="text">
+                     <string>--</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_brightness_min_button">
+                    <property name="text">
+                     <string>-</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item>
                    <widget class="QLabel" name="label_2">
                     <property name="sizePolicy">
@@ -303,36 +335,22 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QSlider" name="edit_brightness_slider">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                   <widget class="QPushButton" name="edit_brightness_plus_button">
+                    <property name="text">
+                     <string>+</string>
                     </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>220</width>
-                      <height>0</height>
-                     </size>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>220</width>
-                      <height>16777215</height>
-                     </size>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_brightness_pplus_button">
+                    <property name="text">
+                     <string>++</string>
                     </property>
-                    <property name="minimum">
-                     <number>-120</number>
-                    </property>
-                    <property name="maximum">
-                     <number>120</number>
-                    </property>
-                    <property name="tracking">
-                     <bool>false</bool>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -341,11 +359,31 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_7">
                   <property name="spacing">
-                   <number>0</number>
+                   <number>10</number>
                   </property>
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
+                  <item>
+                   <widget class="QPushButton" name="edit_saturation_mmin_button">
+                    <property name="text">
+                     <string>--</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_saturation_min_button">
+                    <property name="text">
+                     <string>-</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item>
                    <widget class="QLabel" name="label_3">
                     <property name="sizePolicy">
@@ -381,39 +419,22 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QSlider" name="edit_saturation_slider">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                   <widget class="QPushButton" name="edit_saturation_plus_button">
+                    <property name="text">
+                     <string>+</string>
                     </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>220</width>
-                      <height>0</height>
-                     </size>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>220</width>
-                      <height>16777215</height>
-                     </size>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_saturation_pplus_button">
+                    <property name="text">
+                     <string>++</string>
                     </property>
-                    <property name="minimum">
-                     <number>-255</number>
-                    </property>
-                    <property name="maximum">
-                     <number>255</number>
-                    </property>
-                    <property name="value">
-                     <number>0</number>
-                    </property>
-                    <property name="tracking">
-                     <bool>false</bool>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -422,11 +443,31 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <property name="spacing">
-                   <number>0</number>
+                   <number>10</number>
                   </property>
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
+                  <item>
+                   <widget class="QPushButton" name="edit_red_mmin_button">
+                    <property name="text">
+                     <string>--</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_red_min_button">
+                    <property name="text">
+                     <string>-</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item>
                    <widget class="QLabel" name="label_5">
                     <property name="sizePolicy">
@@ -462,33 +503,22 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QSlider" name="edit_red_slider">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                   <widget class="QPushButton" name="edit_red_plus_button">
+                    <property name="text">
+                     <string>+</string>
                     </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>220</width>
-                      <height>0</height>
-                     </size>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
-                    <property name="minimum">
-                     <number>-255</number>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_red_pplus_button">
+                    <property name="text">
+                     <string>++</string>
                     </property>
-                    <property name="maximum">
-                     <number>255</number>
-                    </property>
-                    <property name="value">
-                     <number>0</number>
-                    </property>
-                    <property name="tracking">
-                     <bool>false</bool>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -497,11 +527,31 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                   <property name="spacing">
-                   <number>0</number>
+                   <number>10</number>
                   </property>
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
+                  <item>
+                   <widget class="QPushButton" name="edit_green_mmin_button">
+                    <property name="text">
+                     <string>--</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_green_min_button">
+                    <property name="text">
+                     <string>-</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item>
                    <widget class="QLabel" name="label_6">
                     <property name="sizePolicy">
@@ -537,33 +587,22 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QSlider" name="edit_green_slider">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                   <widget class="QPushButton" name="edit_green_plus_button">
+                    <property name="text">
+                     <string>+</string>
                     </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>220</width>
-                      <height>0</height>
-                     </size>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
-                    <property name="minimum">
-                     <number>-255</number>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_green_pplus_button">
+                    <property name="text">
+                     <string>++</string>
                     </property>
-                    <property name="maximum">
-                     <number>255</number>
-                    </property>
-                    <property name="value">
-                     <number>0</number>
-                    </property>
-                    <property name="tracking">
-                     <bool>false</bool>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -572,11 +611,31 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <property name="spacing">
-                   <number>0</number>
+                   <number>10</number>
                   </property>
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
+                  <item>
+                   <widget class="QPushButton" name="edit_blue_mmin_button">
+                    <property name="text">
+                     <string>--</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_blue_min_button">
+                    <property name="text">
+                     <string>-</string>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
                   <item>
                    <widget class="QLabel" name="label_7">
                     <property name="sizePolicy">
@@ -612,33 +671,22 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QSlider" name="edit_blue_slider">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
+                   <widget class="QPushButton" name="edit_blue_plus_button">
+                    <property name="text">
+                     <string>+</string>
                     </property>
-                    <property name="minimumSize">
-                     <size>
-                      <width>220</width>
-                      <height>0</height>
-                     </size>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
-                    <property name="minimum">
-                     <number>-255</number>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="edit_blue_pplus_button">
+                    <property name="text">
+                     <string>++</string>
                     </property>
-                    <property name="maximum">
-                     <number>255</number>
-                    </property>
-                    <property name="value">
-                     <number>0</number>
-                    </property>
-                    <property name="tracking">
-                     <bool>false</bool>
-                    </property>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -1277,7 +1325,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QPushButton" name="pushButton">
+                 <widget class="QPushButton" name="edit_simple_write_button">
                   <property name="minimumSize">
                    <size>
                     <width>30</width>
@@ -1383,7 +1431,7 @@
      <x>0</x>
      <y>0</y>
      <width>998</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

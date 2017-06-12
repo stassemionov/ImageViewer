@@ -19,7 +19,7 @@ signals:
     void mouseMoveSignal(int, int);
     void mousePressSignal(Qt::MouseButton, QPoint);
     void imageMoveSignal(QPoint pos);
-    void imageScaledSignal(bool direction);
+    void imageScaledSignal(QWheelEvent* event);
 
 protected:
     void enterEvent(QEvent* event);

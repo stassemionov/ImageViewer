@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,20 +17,20 @@ INCLUDEPATH +=\
     $$PWD/include
 
 SOURCES +=\
-    source/main.cpp\
+    source/main.cpp \
     source/mainwindow.cpp \
     source/labelviewer.cpp \
     source/service.cpp \
     source/history.cpp \
     source/mainwindow_editor.cpp
 
-HEADERS  +=\
+HEADERS +=\
     include/mainwindow.h \
     include/labelviewer.h \
     include/service.h \
     include/history.h
 
-FORMS    +=\
+FORMS +=\
     interface/mainwindow.ui \
     interface/properties_dialog.ui
 

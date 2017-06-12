@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->scroll_area_layout->setAlignment(Qt::AlignCenter);
     ui->scroll_area_layout->addWidget(&m_screne_label);
 
+    // *** SIGNALS AND SLOTS CONNECTION *** //
     connect(&m_screne_label, SIGNAL(mouseEnterSignal()),
             this, SLOT(onMouseEnterOnImage()));
     connect(&m_screne_label, SIGNAL(mouseLeaveSignal()),
@@ -43,9 +44,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onMousePressOnImage(Qt::MouseButton, QPoint)));
     connect(&m_screne_label, SIGNAL(imageMoveSignal(QPoint)),
              this, SLOT(onImageMoveSignal(QPoint)));
-    connect(&m_screne_label, SIGNAL(imageScaledSignal(bool)),
-            this, SLOT(onImageScaled(bool)));
+    connect(&m_screne_label, SIGNAL(imageScaledSignal(QWheelEvent*)),
+            this, SLOT(onImageScaled(QWheelEvent*)));
 
+    // *** SETTINGS LOADING *** //
     QSettings settings{QCoreApplication::organizationName(),
                        QString::fromUtf8("ImageViewer")};
     if (settings.contains(QString::fromUtf8("geometry")))
@@ -64,8 +66,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_last_open_dir = settings.value(QString::fromUtf8("last_open_dir")).toString();
     m_last_save_dir = settings.value(QString::fromUtf8("last_save_dir")).toString();
 
+    // *** MAIN MENUES ADDING *** //
     QMenu* menu_file = menuBar()->addMenu(tr("File"));
     m_mode_menu = menuBar()->addMenu(tr("Mode"));
+    QMenu* menu_tools = menuBar()->addMenu(tr("Tools"));
     QMenu* menu_info = menuBar()->addMenu(tr("Info"));
 
     QAction* open_action = menu_file->addAction(tr("Open..."),
@@ -73,22 +77,13 @@ MainWindow::MainWindow(QWidget *parent) :
                                 QKeySequence(Qt::CTRL + Qt::Key_O));
     m_recent_files_menu = menu_file->addMenu(tr("Recent files..."));
     menu_file->addSeparator();
-    m_save_action = menu_file->addAction(tr("Save..."),
+    QAction* save_action = menu_file->addAction(tr("Save..."),
                          this, SLOT(onSavePicture()),
                          QKeySequence(Qt::CTRL + Qt::Key_S));
     menu_file->addSeparator();
     menu_file->addAction(tr("Exit"),
                          this, SLOT(close()),
                          QKeySequence(Qt::CTRL + Qt::Key_Q));
-//    menu_edit->addAction(tr("Входные данные..."),
-//                         this, SLOT(editInputData()),
-//                         QKeySequence(Qt::CTRL + Qt::Key_I));
-//    menu_edit->addAction(QString::fromUtf8("Шаг сетки..."),
-//                         this, SLOT(specifyGridStep()),
-//                         QKeySequence(Qt::CTRL + Qt::Key_G));
-//    menu_edit->addSeparator();
-//    menu_edit->addAction(QString::fromUtf8("Очистить график"),
-//                         this, SLOT(clearData()));
     QAction* view_mode_enable_action = m_mode_menu->addAction(tr("View mode"));
     QAction* edit_mode_enable_action = m_mode_menu->addAction(tr("Edit mode"));
     QAction* browse_mode_enable_action = m_mode_menu->addAction(tr("Browse mode"));
@@ -113,6 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_mode_menu->actions()[1]->setChecked(false);
     m_mode_menu->actions()[2]->setChecked(false);
     menu_info->addAction(tr("About"), this, SLOT(onShowInfo()));
+    menu_tools->addAction(tr("Settings"), this, SLOT(onOpenSettings()));
 
     m_recent_files_menu->actions().reserve(m_max_recent_count + 2);
     for (int i = 0; i < m_max_recent_count; ++i)
@@ -128,13 +124,12 @@ MainWindow::MainWindow(QWidget *parent) :
     m_recent_files_menu->addAction(clear_action);
     this->updateRecentList();
 
-    // *** Context menues *** //
-
-    m_context_menu_viewer =  new QMenu(this);
-    m_context_menu_editor =  new QMenu(this);
+    // *** CONTEXT MENUES ADDING *** //
+    m_context_menu_viewer  = new QMenu(this);
+    m_context_menu_editor  = new QMenu(this);
     m_context_menu_browser = new QMenu(this);
 
-    m_context_menu_viewer->addAction(m_save_action);
+    m_context_menu_viewer->addAction(save_action);
     QAction* print_action = m_context_menu_viewer->addAction(
                 tr("Print..."),
                 this,
@@ -145,38 +140,39 @@ MainWindow::MainWindow(QWidget *parent) :
                 this,
                 SLOT(onShowProperties()));
 
+    // *** TOOLBAR BUTTONS ADDING *** //
     QToolButton* open_file_button  = new QToolButton();
     QToolButton* undo_button       = new QToolButton();
     QToolButton* redo_button       = new QToolButton();
     QToolButton* save_button       = new QToolButton();
     QToolButton* print_button      = new QToolButton();
     QToolButton* properties_button = new QToolButton();
-    open_file_button->setIcon(
-        QIcon(QString::fromUtf8(":/open_icon.png")));
-    undo_button->setIcon(
-        QIcon(QString::fromUtf8(":/undo_icon.png")));
-    redo_button->setIcon(
-        QIcon(QString::fromUtf8(":/redo_icon.png")));
-    save_button->setIcon(
-        QIcon(QString::fromUtf8(":/save_icon.png")));
-    print_button->setIcon(
-        QIcon(QString::fromUtf8(":/printer_icon.png")));
-    properties_button->setIcon(
-        QIcon(QString::fromUtf8(":/properties_icon.png")));
 
-    connect(open_file_button, SIGNAL(clicked(bool)), open_action,      SLOT(trigger()));
-    connect(undo_button,      SIGNAL(clicked(bool)), this,             SLOT(onUndo()));
-    connect(redo_button,      SIGNAL(clicked(bool)), this,             SLOT(onRedo()));
-    connect(save_button,      SIGNAL(clicked(bool)), m_save_action,    SLOT(trigger()));
-    connect(print_button,     SIGNAL(clicked(bool)), print_action,     SLOT(trigger()));
-    connect(properties_button,SIGNAL(clicked(bool)), properties_action,SLOT(trigger()));
+    QAction* undo_action = new QAction();
+    QAction* redo_action = new QAction();
+    undo_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z));
+    redo_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y));
+    undo_action->setIcon(QIcon(QString::fromUtf8(":/undo_icon.png")));
+    redo_action->setIcon(QIcon(QString::fromUtf8(":/redo_icon.png")));
+    open_action->setIcon(QIcon(QString::fromUtf8(":/open_icon.png")));
+    save_action->setIcon(QIcon(QString::fromUtf8(":/save_icon.png")));
+    print_action->setIcon(QIcon(QString::fromUtf8(":/printer_icon.png")));
+    properties_action->setIcon(QIcon(QString::fromUtf8(":/properties_icon.png")));
+    undo_action->setToolTip(tr("Cancel recent action"));
+    redo_action->setToolTip(tr("Try recent action again"));
+    open_action->setToolTip(tr("Open image"));
+    save_action->setToolTip(tr("Save current image"));
+    print_action->setToolTip(tr("Print current image"));
+    properties_action->setToolTip(tr("Properties of image"));
+    connect(undo_action, SIGNAL(triggered(bool)), this, SLOT(onUndo()));
+    connect(redo_action, SIGNAL(triggered(bool)), this, SLOT(onRedo()));
+    undo_button->setDefaultAction(undo_action);
+    redo_button->setDefaultAction(redo_action);
+    open_file_button->setDefaultAction(open_action);
+    save_button->setDefaultAction(save_action);
+    print_button->setDefaultAction(print_action);
+    properties_button->setDefaultAction(properties_action);
 
-    open_file_button->setToolTip(tr("Open image"));
-    undo_button->setToolTip(tr("Cancel recent action"));
-    redo_button->setToolTip(tr("Try recent action again"));
-    save_button->setToolTip(tr("Save current image"));
-    print_button->setToolTip(tr("Print current image"));
-    properties_button->setToolTip(tr("Properties of image"));
     ui->mainToolBar->addWidget(open_file_button);
     ui->mainToolBar->addWidget(undo_button);
     ui->mainToolBar->addWidget(redo_button);
@@ -184,22 +180,66 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainToolBar->addWidget(print_button);
     ui->mainToolBar->addWidget(properties_button);
 
+    // *** EDIT HISTORY CREATION *** //
     m_edit_history = new EditHistory(QString::fromUtf8(""), 15);
-    connect(ui->edit_brightness_slider, SIGNAL(valueChanged(int)),
-            this, SLOT(onColourEdited()));
-    connect(ui->edit_saturation_slider, SIGNAL(valueChanged(int)),
-            this, SLOT(onColourEdited()));
-    connect(ui->edit_red_slider, SIGNAL(valueChanged(int)),
-            this, SLOT(onColourEdited()));
-    connect(ui->edit_green_slider, SIGNAL(valueChanged(int)),
-            this, SLOT(onColourEdited()));
-    connect(ui->edit_blue_slider, SIGNAL(valueChanged(int)),
-            this, SLOT(onColourEdited()));
+
+    // *** EDITOR WIDGETS SIGNALS AND SLOTS CONNECTION *** //
+    connect(ui->edit_left_rot_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRotateLeft()));
+    connect(ui->edit_right_rot_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRotateRight()));
+
+    connect(ui->edit_brightness_min_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBrightnessDec()));
+    connect(ui->edit_brightness_mmin_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBrightnessDoubleDec()));
+    connect(ui->edit_brightness_plus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBrightnessInc()));
+    connect(ui->edit_brightness_pplus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBrightnessDoubleInc()));
+
+    connect(ui->edit_saturation_min_button, SIGNAL(clicked(bool)),
+            this, SLOT(onSaturationDec()));
+    connect(ui->edit_saturation_mmin_button, SIGNAL(clicked(bool)),
+            this, SLOT(onSaturationDoubleDec()));
+    connect(ui->edit_saturation_plus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onSaturationInc()));
+    connect(ui->edit_saturation_pplus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onSaturationDoubleInc()));
+
+    connect(ui->edit_red_min_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRedDec()));
+    connect(ui->edit_red_mmin_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRedDoubleDec()));
+    connect(ui->edit_red_plus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRedInc()));
+    connect(ui->edit_red_pplus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRedDoubleInc()));
+
+    connect(ui->edit_green_min_button, SIGNAL(clicked(bool)),
+            this, SLOT(onGreenDec()));
+    connect(ui->edit_green_mmin_button, SIGNAL(clicked(bool)),
+            this, SLOT(onGreenDoubleDec()));
+    connect(ui->edit_green_plus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onGreenInc()));
+    connect(ui->edit_green_pplus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onGreenDoubleInc()));
+
+    connect(ui->edit_blue_min_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBlueDec()));
+    connect(ui->edit_blue_mmin_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBlueDoubleDec()));
+    connect(ui->edit_blue_plus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBlueInc()));
+    connect(ui->edit_blue_pplus_button, SIGNAL(clicked(bool)),
+            this, SLOT(onBlueDoubleInc()));
+
     connect(ui->edit_negative_button, SIGNAL(clicked(bool)),
             this, SLOT(onNegatived()));
     connect(ui->edit_colorize_button, SIGNAL(clicked(bool)),
             this, SLOT(onUncolourized()));
 
+    // *** CONFIGURATION OF INFORMATION WINDOW *** //
     this->configureInfoWidget();
 }
 
@@ -286,69 +326,97 @@ void MainWindow::onOpenImage()
 void MainWindow::onOpenRecentFile()
 {
     QString name = dynamic_cast<QAction*>(sender())->text();
-    loadImage(name);
+    this->loadImage(name);
 }
 
 bool MainWindow::loadImage(const QString& file_name)
 {
-    if (m_main_image.load(file_name))
+    if (!m_main_image.load(file_name))
     {
-        m_showed_image = m_main_image;
-        if (m_intermediate_image != nullptr)
-        {
-            delete m_intermediate_image;
-        }
-        if (m_colour_buffer_image != nullptr)
-        {
-            delete m_colour_buffer_image;
-        }
-        m_intermediate_image = new QImage(m_main_image);
-        m_colour_buffer_image = new QImage(m_main_image);
-        m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-
-        m_uncolourized = false;
-        m_negatived = false;
-
-        m_current_image_fileinfo.setFile(file_name);
-
-        QFileInfo finfo(file_name);
-        m_edit_history->clean();
-        m_edit_history->setFileName(finfo.fileName());
-        m_edit_history->add(*m_intermediate_image);
-
-        int index = -1;
-        for (int i = 0; i < m_recent_files.size(); ++i)
-        {
-            if (m_recent_files[i] == file_name)
-            {
-                index = i;
-                break;
-            }
-        }
-
-        if (index == -1)
-        {
-            m_recent_files.push_front(file_name);
-
-            QAction* p_action = new QAction(m_recent_files_menu);
-            connect(p_action, SIGNAL(triggered()), this, SLOT(onOpenRecentFile()));
-
-            if (!m_recent_files_menu->actions().empty())
-                m_recent_files_menu->insertAction(
-                    m_recent_files_menu->actions()[0], p_action);
-            else
-                m_recent_files_menu->addAction(p_action);
-        }
-        else if (index != 0)
-        {
-            m_recent_files.move(index, 0);
-            m_recent_files_menu->actions().move(index, 0);
-        }
-
-        this->updateRecentList();
-        return true;
+        return false;
     }
-    return false;
+
+    m_current_image_fileinfo.setFile(file_name);
+
+    QFileInfo finfo(file_name);
+    m_edit_history->clean();
+    m_edit_history->setFileName(finfo.fileName());
+    m_edit_history->add(m_main_image);
+
+    // searching for name of loaded file in list of recent files
+    int index = -1;
+    for (int i = 0; i < m_recent_files.size(); ++i)
+    {
+        if (m_recent_files[i] == file_name)
+        {
+            index = i;
+            break;
+        }
+    }
+    // if no then push this name to hte beginning of recent files list
+    if (index == -1)
+    {
+        m_recent_files.push_front(file_name);
+
+        QAction* p_action = new QAction(m_recent_files_menu);
+        connect(p_action, SIGNAL(triggered()), this, SLOT(onOpenRecentFile()));
+
+        if (!m_recent_files_menu->actions().empty())
+            m_recent_files_menu->insertAction(
+                m_recent_files_menu->actions()[0], p_action);
+        else
+            m_recent_files_menu->addAction(p_action);
+    }
+    else if (index != 0)    // else, move this name to the beginning of this list
+    {
+        m_recent_files.move(index, 0);
+        m_recent_files_menu->actions().move(index, 0);
+    }
+    this->updateRecentList();
+
+    // Update histogram
+    ui->edit_hist_label->setPixmap(QPixmap());
+
+    m_intermediate_image = m_main_image.copy();
+    this->updateScale();
+
+    m_pos_label.setText(QString::fromUtf8(""));
+
+    return true;
+}
+
+void MainWindow::updateScale()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    double x_scale = 1.0 * ui->scrollArea->viewport()->width() /
+            m_intermediate_image.width();
+    double y_scale = 1.0 * ui->scrollArea->viewport()->height() /
+            m_intermediate_image.height();
+    if (x_scale < 1.0 || y_scale < 1.0)
+    {
+        if (x_scale < y_scale)
+        {
+            m_showed_image = m_intermediate_image.scaledToWidth(
+                        ui->scrollArea->viewport()->width());
+            m_scale = x_scale;
+        }
+        else
+        {
+            m_showed_image = m_intermediate_image.scaledToHeight(
+                        ui->scrollArea->viewport()->height());
+            m_scale = y_scale;
+        }
+    }
+    else
+    {
+        m_showed_image = m_intermediate_image.copy();
+        m_scale = 1.0;
+    }
+    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
 }
 
 void MainWindow::onSavePicture()
@@ -377,7 +445,7 @@ void MainWindow::onSavePicture()
     {
         return;
     }
-    if (m_intermediate_image->save(fileName, 0, 100))
+    if (m_intermediate_image.save(fileName, 0, 100))
     {
         QFileInfo finfo(fileName);
         m_last_save_dir = finfo.path();
@@ -409,7 +477,7 @@ void MainWindow::onChangeMode(int mode)
         ui->scrollArea->show();
         ui->editor_scroll_area->hide();
         ui->mainToolBar->hide();
-
+        this->updateScale();
     }
     else if (mode == 2)
     {
@@ -419,7 +487,7 @@ void MainWindow::onChangeMode(int mode)
         ui->scrollArea->show();
         ui->editor_scroll_area->show();
         ui->mainToolBar->show();
-
+        this->updateScale();
     }
     else // AppMode::Mode_Browser
     {
@@ -497,20 +565,30 @@ void MainWindow::onImageMoveSignal(QPoint pos)
         qMax(0, ui->scrollArea->horizontalScrollBar()->value() - pos.x()));
 }
 
-void MainWindow::onImageScaled(bool direction)
+void MainWindow::onImageScaled(QWheelEvent* event)
 {
-    m_scale += direction ? 0.1 : -0.1;
-    if ((m_scale * m_intermediate_image->width()  <
+    const bool direction = event->angleDelta().y() > 0;
+    const double ratio = (direction ? m_scale_step : (1.0 / m_scale_step)) - 1.0;   // new_scale / old_scale
+
+    m_scale = direction ? (m_scale * m_scale_step) : (m_scale / m_scale_step);
+    if ((m_scale * m_intermediate_image.width()  <
          QApplication::desktop()->width()  / 8) ||
-        (m_scale * m_intermediate_image->height() <
+        (m_scale * m_intermediate_image.height() <
          QApplication::desktop()->height() / 4))
     {
-        m_scale -= direction ? 0.1 : -0.1;
+        m_scale = direction ? (m_scale / m_scale_step) : (m_scale * m_scale_step);
+        return;
     }
 
-    m_showed_image = m_intermediate_image->scaledToHeight(
-        m_intermediate_image->height() * m_scale);
+    int new_vvalue = ui->scrollArea->verticalScrollBar()->value()   + ratio * event->y();
+    int new_hvalue = ui->scrollArea->horizontalScrollBar()->value() + ratio * event->x();
+
+    m_showed_image = m_intermediate_image.scaledToHeight(
+        m_intermediate_image.height() * m_scale);
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+
+    ui->scrollArea->horizontalScrollBar()->setValue(new_hvalue > 0 ? new_hvalue : 0);
+    ui->scrollArea->verticalScrollBar()->setValue(new_vvalue > 0 ? new_vvalue : 0);
 
     m_pos_label.setText(QString::fromUtf8(""));
 }
@@ -556,28 +634,9 @@ void MainWindow::onShowProperties()
     dial->exec();
 }
 
-void MainWindow::onUndo()
+void MainWindow::onOpenSettings()
 {
-    QImage* prev_image = m_edit_history->back();
-    if (prev_image == nullptr)
-    {
-        return;
-    }
-    *m_intermediate_image = *prev_image;
-    m_showed_image = *prev_image;
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-}
 
-void MainWindow::onRedo()
-{
-    QImage* prev_image = m_edit_history->forward();
-    if (prev_image == nullptr)
-    {
-        return;
-    }
-    *m_intermediate_image = *prev_image;
-    m_showed_image = *prev_image;
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
 }
 
 void MainWindow::configureInfoWidget()

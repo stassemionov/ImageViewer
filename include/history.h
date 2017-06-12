@@ -19,11 +19,11 @@ public:
     QString getStoreDirectory();
     int getMaxStoredCount();
 
-    // Create new history record.
+    // Create new history record with a copy of given image.
     void add(const QImage& image);
-    // Getting of more older record of history.
+    // Getting copy of more older record of history.
     QImage* back();
-    // Getting of more newer record of history.
+    // Getting copy of more newer record of history.
     QImage* forward();
     // Remove all stored images from hard disk and main memory.
     void clean();
@@ -34,7 +34,7 @@ protected:
     void uploadExcessImages();
     // Removes images from list starting with loc_pos.
     void removeUnused(int loc_pos);
-    // Get image that is pointed by current pointer.
+    // Get copy of image that is pointed by current pointer.
     QImage* get();
 
 private:

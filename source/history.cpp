@@ -3,7 +3,6 @@
 #include <QApplication>
 #include <QDir>
 
-
 #include <QDebug>
 
 
@@ -114,13 +113,9 @@ void EditHistory::add(const QImage& image)
     if (m_stored_count < m_max_size)
     {
         this->removeUnused(m_pointer + 1);
-        m_list.push_back(new QImage(image));
+        m_list.push_back(new QImage(image.copy()));
         m_stored_count = m_list.size();
         ++m_pointer;
-
-
-        qDebug() << m_pointer;
-
         return;
     }
 
@@ -157,12 +152,10 @@ void EditHistory::add(const QImage& image)
                 QString::number(i) + QString::fromUtf8("__") + m_filename));
         }
     }
-    m_list.push_back(new QImage(image));
+    m_list.push_back(new QImage(image.copy()));
     m_stored_count = m_pointer + 2;
     ++m_pointer;
     this->uploadExcessImages();
-
-    qDebug() << m_pointer;
 }
 
 QImage* EditHistory::back()
@@ -173,10 +166,9 @@ QImage* EditHistory::back()
     }
 
     --m_pointer;
+    QImage* res = this->get();
 
-    qDebug() << m_pointer;
-
-    return this->get();
+    return res;
 }
 
 QImage* EditHistory::forward()
@@ -187,18 +179,16 @@ QImage* EditHistory::forward()
     }
 
     ++m_pointer;
+    QImage* res = this->get();
 
-
-    qDebug() << m_pointer;
-
-    return this->get();
+    return res;
 }
 
 QImage* EditHistory::get()
 {
     if (m_stored_count <= m_max_size)
     {
-        return new QImage(*m_list[m_pointer]);
+        return new QImage(m_list[m_pointer]->copy());
     }
     else
     {
@@ -211,7 +201,7 @@ QImage* EditHistory::get()
         }
         else    // required image is in main memory.
         {
-            return new QImage(*m_list[m_pointer - dif]);
+            return new QImage(m_list[m_pointer - dif]->copy());
         }
     }
 }
