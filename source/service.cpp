@@ -14,6 +14,18 @@ QString loadTextFileData(const QString& filepath)
     return result;
 }
 
+void convertToColoured(QImage& image)
+{
+    if ((image.format() == QImage::Format_Grayscale8) ||
+        (image.format() == QImage::Format_Mono) ||
+        (image.format() == QImage::Format_MonoLSB) ||
+        (image.format() == QImage::Format_Indexed8) /*||
+        (image.format() == QImage::Format_Alpha8)*/)
+    {
+        image = image.convertToFormat(QImage::Format_RGB32);
+    }
+}
+
 typedef struct RgbColor
 {
     unsigned char r;

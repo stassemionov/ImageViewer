@@ -1,3 +1,4 @@
+#include "service.h"
 #include <mainwindow.h>
 #include "ui_mainwindow.h"
 
@@ -163,6 +164,8 @@ void MainWindow::onRedEdited(int dif)
         return;
     }
 
+    convertToColoured(m_intermediate_image);
+
     for (int i = 0; i < m_intermediate_image.height(); ++i)
     {
         QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
@@ -188,6 +191,8 @@ void MainWindow::onGreenEdited(int dif)
     {
         return;
     }
+
+    convertToColoured(m_intermediate_image);
 
     for (int i = 0; i < m_intermediate_image.height(); ++i)
     {
@@ -215,6 +220,8 @@ void MainWindow::onBlueEdited(int dif)
     {
         return;
     }
+
+    convertToColoured(m_intermediate_image);
 
     for (int i = 0; i < m_intermediate_image.height(); ++i)
     {

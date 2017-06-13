@@ -534,8 +534,9 @@ void MainWindow::onMouseMoveOnImage(int xcoord, int ycoord)
     if (m_mode == AppMode::Mode_Editor)
     {
         m_pos_label.setText(
-            QString::fromUtf8("X = ")   + QString::number(xcoord) +
-            QString::fromUtf8(", Y = ") + QString::number(ycoord));
+            QString::fromUtf8("X = %0, Y = %1").
+                    arg((int) (xcoord / m_scale)).
+                    arg((int) (ycoord / m_scale)));
     }
 }
 
