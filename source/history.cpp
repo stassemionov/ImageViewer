@@ -107,6 +107,11 @@ int EditHistory::getMaxStoredCount()
     return m_max_size;
 }
 
+int EditHistory::getHistoryLenght()
+{
+    return m_stored_count;
+}
+
 void EditHistory::add(const QImage& image)
 {
     // If list is still not full.

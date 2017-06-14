@@ -12,14 +12,23 @@ public:
                 const QString& store_directory, int size = 0);
     ~EditHistory();
 
+    // Set name of file, that is edited.
     void setFileName(const QString& name);
+    // Get name of file, that is edited.
     QString getFileName();
+    // Set directory, that stores history files.
     bool setStoreDirectory(const QString& dir);
-    bool setMaxStoredCount(int count);
+    // Get directory, that stores history files.
     QString getStoreDirectory();
+    // Set maximal count of records< that can be stored in main memory.
+    bool setMaxStoredCount(int count);
+    // Get maximal count of records< that can be stored in main memory.
     int getMaxStoredCount();
 
-    // Create new history record with a copy of given image.
+    // Total count of stored records (in memory and on disk).
+    int getHistoryLenght();
+
+    // Create new record with a copy of given image.
     void add(const QImage& image);
     // Getting copy of more older record of history.
     QImage* back();
@@ -27,6 +36,17 @@ public:
     QImage* forward();
     // Remove all stored images from hard disk and main memory.
     void clean();
+
+    // *** Additional functionality:
+
+    // Check if current version is oroginal.
+    bool isAtStart();
+    // Check if current version is latest version.
+    bool isAtEnd();
+    // Jump to version with specified index.
+    void jumpToVersion(int index);
+    // Get copy of latest version, that is stored in history.
+    QImage* getLatestVersion();
 
 protected:
     // Upload to hard disk all images starting with beginning of list

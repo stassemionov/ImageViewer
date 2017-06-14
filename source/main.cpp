@@ -18,3 +18,12 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
+
+// * Problem with history
+// * List of history
+// * Cutting
+// * Settings (window):
+//      => Load recent image at start
+//      => Step of scaling
+//      => Lenght of recent images list
+// * Configure buttons (active/disactive)

@@ -8,10 +8,12 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-QMAKE_CXXFLAGS += -std=c++11 -O2 -Wall
+QMAKE_CXXFLAGS += -std=c++11 -O3 -Wall -fopenmp
 
 TARGET = ImageViewer
 TEMPLATE = app
+
+LIBS += -fopenmp
 
 INCLUDEPATH +=\
     $$PWD/include

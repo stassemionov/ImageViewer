@@ -8,10 +8,10 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QToolButton>
+#include <QMessageBox>
 #include <QScrollBar>
 #include <QDateTime>
 #include <QPixmap>
-#include <QAction>
 
 #include <service.h>
 
@@ -29,9 +29,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->editor_scroll_area->hide();
     ui->mainToolBar->hide();
 
-    //ui->scrollArea->setWidget(&m_screne_label);
-    ui->scroll_area_layout->setAlignment(Qt::AlignCenter);
-    ui->scroll_area_layout->addWidget(&m_screne_label);
+    m_screne_label.setAlignment(Qt::AlignCenter);
+    m_screne_label.setScaledContents(true);
+
+    ui->viewer_scroll_area->setAlignment(Qt::AlignCenter);
+    ui->viewer_scroll_area->setWidgetResizable(false);
+    ui->viewer_scroll_area->setWidget(&m_screne_label);
 
     // *** SIGNALS AND SLOTS CONNECTION *** //
     connect(&m_screne_label, SIGNAL(mouseEnterSignal()),
@@ -72,12 +75,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QMenu* menu_tools = menuBar()->addMenu(tr("Tools"));
     QMenu* menu_info = menuBar()->addMenu(tr("Info"));
 
-    QAction* open_action = menu_file->addAction(tr("Open..."),
+    m_open_action = menu_file->addAction(tr("Open..."),
                                 this, SLOT(onOpenImage()),
                                 QKeySequence(Qt::CTRL + Qt::Key_O));
     m_recent_files_menu = menu_file->addMenu(tr("Recent files..."));
     menu_file->addSeparator();
-    QAction* save_action = menu_file->addAction(tr("Save..."),
+    m_save_action = menu_file->addAction(tr("Save..."),
                          this, SLOT(onSavePicture()),
                          QKeySequence(Qt::CTRL + Qt::Key_S));
     menu_file->addSeparator();
@@ -129,13 +132,13 @@ MainWindow::MainWindow(QWidget *parent) :
     m_context_menu_editor  = new QMenu(this);
     m_context_menu_browser = new QMenu(this);
 
-    m_context_menu_viewer->addAction(save_action);
-    QAction* print_action = m_context_menu_viewer->addAction(
+    m_context_menu_viewer->addAction(m_save_action);
+    m_print_action = m_context_menu_viewer->addAction(
                 tr("Print..."),
                 this,
                 SLOT(onPrintPicture()),
                 QKeySequence(Qt::CTRL + Qt::Key_P));
-    QAction* properties_action = m_context_menu_viewer->addAction(
+    m_properties_action = m_context_menu_viewer->addAction(
                 tr("Properties"),
                 this,
                 SLOT(onShowProperties()));
@@ -148,30 +151,30 @@ MainWindow::MainWindow(QWidget *parent) :
     QToolButton* print_button      = new QToolButton();
     QToolButton* properties_button = new QToolButton();
 
-    QAction* undo_action = new QAction();
-    QAction* redo_action = new QAction();
-    undo_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z));
-    redo_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y));
-    undo_action->setIcon(QIcon(QString::fromUtf8(":/undo_icon.png")));
-    redo_action->setIcon(QIcon(QString::fromUtf8(":/redo_icon.png")));
-    open_action->setIcon(QIcon(QString::fromUtf8(":/open_icon.png")));
-    save_action->setIcon(QIcon(QString::fromUtf8(":/save_icon.png")));
-    print_action->setIcon(QIcon(QString::fromUtf8(":/printer_icon.png")));
-    properties_action->setIcon(QIcon(QString::fromUtf8(":/properties_icon.png")));
-    undo_action->setToolTip(tr("Cancel recent action"));
-    redo_action->setToolTip(tr("Try recent action again"));
-    open_action->setToolTip(tr("Open image"));
-    save_action->setToolTip(tr("Save current image"));
-    print_action->setToolTip(tr("Print current image"));
-    properties_action->setToolTip(tr("Properties of image"));
-    connect(undo_action, SIGNAL(triggered(bool)), this, SLOT(onUndo()));
-    connect(redo_action, SIGNAL(triggered(bool)), this, SLOT(onRedo()));
-    undo_button->setDefaultAction(undo_action);
-    redo_button->setDefaultAction(redo_action);
-    open_file_button->setDefaultAction(open_action);
-    save_button->setDefaultAction(save_action);
-    print_button->setDefaultAction(print_action);
-    properties_button->setDefaultAction(properties_action);
+    m_undo_action = new QAction();
+    m_redo_action = new QAction();
+    m_undo_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Z));
+    m_redo_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Y));
+    m_undo_action->setIcon(QIcon(QString::fromUtf8(":/undo_icon.png")));
+    m_redo_action->setIcon(QIcon(QString::fromUtf8(":/redo_icon.png")));
+    m_open_action->setIcon(QIcon(QString::fromUtf8(":/open_icon.png")));
+    m_save_action->setIcon(QIcon(QString::fromUtf8(":/save_icon.png")));
+    m_print_action->setIcon(QIcon(QString::fromUtf8(":/printer_icon.png")));
+    m_properties_action->setIcon(QIcon(QString::fromUtf8(":/properties_icon.png")));
+    m_undo_action->setToolTip(tr("Cancel recent action"));
+    m_redo_action->setToolTip(tr("Try recent action again"));
+    m_open_action->setToolTip(tr("Open image"));
+    m_save_action->setToolTip(tr("Save current image"));
+    m_print_action->setToolTip(tr("Print current image"));
+    m_properties_action->setToolTip(tr("Properties of image"));
+    connect(m_undo_action, SIGNAL(triggered(bool)), this, SLOT(onUndo()));
+    connect(m_redo_action, SIGNAL(triggered(bool)), this, SLOT(onRedo()));
+    undo_button->setDefaultAction(m_undo_action);
+    redo_button->setDefaultAction(m_redo_action);
+    open_file_button->setDefaultAction(m_open_action);
+    save_button->setDefaultAction(m_save_action);
+    print_button->setDefaultAction(m_print_action);
+    properties_button->setDefaultAction(m_properties_action);
 
     ui->mainToolBar->addWidget(open_file_button);
     ui->mainToolBar->addWidget(undo_button);
@@ -181,7 +184,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainToolBar->addWidget(properties_button);
 
     // *** EDIT HISTORY CREATION *** //
-    m_edit_history = new EditHistory(QString::fromUtf8(""), 15);
+    m_edit_history = new EditHistory(QString::fromUtf8(""), m_max_stored_records);
 
     // *** EDITOR WIDGETS SIGNALS AND SLOTS CONNECTION *** //
     connect(ui->edit_left_rot_button, SIGNAL(clicked(bool)),
@@ -241,6 +244,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // *** CONFIGURATION OF INFORMATION WINDOW *** //
     this->configureInfoWidget();
+
+    this->setSavedStatus(true);
 }
 
 MainWindow::~MainWindow()
@@ -249,10 +254,6 @@ MainWindow::~MainWindow()
     delete m_info_widget;
     delete m_mode_mapper;
     delete m_edit_history;
- //   if (m_intermediate_image != nullptr)
- //   {
- //       delete m_intermediate_image;
- //   }
 }
 
 void MainWindow::updateRecentList()
@@ -378,52 +379,39 @@ bool MainWindow::loadImage(const QString& file_name)
     ui->edit_hist_label->setPixmap(QPixmap());
 
     m_intermediate_image = m_main_image.copy();
+    m_showed_image = m_main_image.copy();
+    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
     this->updateScale();
 
     m_pos_label.setText(QString::fromUtf8(""));
+
+    this->setSavedStatus(true);
 
     return true;
 }
 
 void MainWindow::updateScale()
 {
-    if (m_intermediate_image.isNull())
+    if (m_showed_image.isNull())
     {
         return;
     }
 
-    double x_scale = 1.0 * ui->scrollArea->viewport()->width() /
-            m_intermediate_image.width();
-    double y_scale = 1.0 * ui->scrollArea->viewport()->height() /
-            m_intermediate_image.height();
-    if (x_scale < 1.0 || y_scale < 1.0)
-    {
-        if (x_scale < y_scale)
-        {
-            m_showed_image = m_intermediate_image.scaledToWidth(
-                        ui->scrollArea->viewport()->width());
-            m_scale = x_scale;
-        }
-        else
-        {
-            m_showed_image = m_intermediate_image.scaledToHeight(
-                        ui->scrollArea->viewport()->height());
-            m_scale = y_scale;
-        }
-    }
-    else
-    {
-        m_showed_image = m_intermediate_image.copy();
-        m_scale = 1.0;
-    }
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+    double x_scale = 1.0 * ui->viewer_scroll_area->viewport()->width() /
+            m_showed_image.width();
+    double y_scale = 1.0 * ui->viewer_scroll_area->viewport()->height() /
+            m_showed_image.height();
+    // If showed image has side that is longer then corresponding size of viewport,
+    // then image is adjusted to viewport with saving of proportions of image.
+    m_scale = (x_scale < 1.0 || y_scale < 1.0) ? qMin(x_scale, y_scale) : 1.0;
+    m_screne_label.resize(m_scale * m_showed_image.size());
 }
 
-void MainWindow::onSavePicture()
+bool MainWindow::onSavePicture()
 {
     if (m_main_image.isNull())
     {
-        return;
+        return false;
     }
 
     QDir save_dir(m_last_save_dir);
@@ -443,13 +431,16 @@ void MainWindow::onSavePicture()
                 "*.pgm *.ppm *.tiff *.xbm *.xpm *.svg *.tga)"));
     if (fileName.isEmpty())
     {
-        return;
+        return false;
     }
     if (m_intermediate_image.save(fileName, 0, 100))
     {
         QFileInfo finfo(fileName);
         m_last_save_dir = finfo.path();
+        this->setSavedStatus(true);
+        return true;
     }
+    return false;
 }
 
 void MainWindow::onShowInfo()
@@ -473,8 +464,8 @@ void MainWindow::onChangeMode(int mode)
     {
         m_mode = AppMode::Mode_View;
         this->statusBar()->setHidden(true);
-        ui->scrollArea->setLineWidth(0);
-        ui->scrollArea->show();
+        ui->viewer_scroll_area->setLineWidth(0);
+        ui->viewer_scroll_area->show();
         ui->editor_scroll_area->hide();
         ui->mainToolBar->hide();
         this->updateScale();
@@ -483,8 +474,8 @@ void MainWindow::onChangeMode(int mode)
     {
         m_mode = AppMode::Mode_Editor;
         this->statusBar()->setHidden(false);
-        ui->scrollArea->setLineWidth(2);
-        ui->scrollArea->show();
+        ui->viewer_scroll_area->setLineWidth(2);
+        ui->viewer_scroll_area->show();
         ui->editor_scroll_area->show();
         ui->mainToolBar->show();
         this->updateScale();
@@ -493,7 +484,7 @@ void MainWindow::onChangeMode(int mode)
     {
         m_mode = AppMode::Mode_Browser;
         this->statusBar()->setHidden(false);
-        ui->scrollArea->hide();
+        ui->viewer_scroll_area->hide();
         ui->editor_scroll_area->hide();
         ui->mainToolBar->hide();
     }
@@ -501,6 +492,33 @@ void MainWindow::onChangeMode(int mode)
 
 void MainWindow::closeEvent(QCloseEvent *pEvent)
 {
+    if (!m_is_saved)
+    {
+        QMessageBox msgBox;
+        msgBox.setIconPixmap(
+            QPixmap(QString::fromUtf8(":/wonna_save.png")).scaledToHeight(100));
+        msgBox.setText(tr("You made some changes in the image"));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
+        msgBox.setDetailedText(tr("There will be something interesting soon..."));
+        msgBox.setStandardButtons(
+            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+        switch (ret)
+        {
+            case QMessageBox::Save:
+                if (!this->onSavePicture())
+                {
+                    pEvent->ignore();
+                    return;
+                }
+                break;
+            case QMessageBox::Cancel:
+                pEvent->ignore();
+                return;
+        }
+    }
+
     pEvent->accept();
     QSettings settings{QCoreApplication::organizationName(),
                 QString::fromUtf8(("ImageViewer"))};
@@ -560,10 +578,10 @@ void MainWindow::onMousePressOnImage(Qt::MouseButton button, QPoint pos)
 
 void MainWindow::onImageMoveSignal(QPoint pos)
 {
-   ui->scrollArea->verticalScrollBar()->setValue(
-        qMax(0, ui->scrollArea->verticalScrollBar()->value() - pos.y()));
-   ui->scrollArea->horizontalScrollBar()->setValue(
-        qMax(0, ui->scrollArea->horizontalScrollBar()->value() - pos.x()));
+   ui->viewer_scroll_area->verticalScrollBar()->setValue(
+        qMax(0, ui->viewer_scroll_area->verticalScrollBar()->value() - pos.y()));
+   ui->viewer_scroll_area->horizontalScrollBar()->setValue(
+        qMax(0, ui->viewer_scroll_area->horizontalScrollBar()->value() - pos.x()));
 }
 
 void MainWindow::onImageScaled(QWheelEvent* event)
@@ -572,24 +590,25 @@ void MainWindow::onImageScaled(QWheelEvent* event)
     const double ratio = (direction ? m_scale_step : (1.0 / m_scale_step)) - 1.0;   // new_scale / old_scale
 
     m_scale = direction ? (m_scale * m_scale_step) : (m_scale / m_scale_step);
-    if ((m_scale * m_intermediate_image.width()  <
-         QApplication::desktop()->width()  / 8) ||
-        (m_scale * m_intermediate_image.height() <
-         QApplication::desktop()->height() / 4))
+    int new_h = m_scale * m_showed_image.height();
+    int new_w = m_scale * m_showed_image.width();
+    if ((new_w < ui->viewer_scroll_area->width() / 16)  ||
+        (new_h < ui->viewer_scroll_area->height() / 16) ||
+        (new_w > ui->viewer_scroll_area->width() * 8)  ||
+        (new_h > ui->viewer_scroll_area->height() * 8))
     {
-        m_scale = direction ? (m_scale / m_scale_step) : (m_scale * m_scale_step);
+        m_scale = direction ? (m_scale / m_scale_step) :
+                              (m_scale * m_scale_step);
         return;
     }
 
-    int new_vvalue = ui->scrollArea->verticalScrollBar()->value()   + ratio * event->y();
-    int new_hvalue = ui->scrollArea->horizontalScrollBar()->value() + ratio * event->x();
+    int new_vvalue = ui->viewer_scroll_area->verticalScrollBar()->value()   + ratio * event->y();
+    int new_hvalue = ui->viewer_scroll_area->horizontalScrollBar()->value() + ratio * event->x();
 
-    m_showed_image = m_intermediate_image.scaledToHeight(
-        m_intermediate_image.height() * m_scale);
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+    m_screne_label.resize(m_showed_image.size() * m_scale);
 
-    ui->scrollArea->horizontalScrollBar()->setValue(new_hvalue > 0 ? new_hvalue : 0);
-    ui->scrollArea->verticalScrollBar()->setValue(new_vvalue > 0 ? new_vvalue : 0);
+    ui->viewer_scroll_area->horizontalScrollBar()->setValue(new_hvalue > 0 ? new_hvalue : 0);
+    ui->viewer_scroll_area->verticalScrollBar()->setValue(new_vvalue > 0 ? new_vvalue : 0);
 
     m_pos_label.setText(QString::fromUtf8(""));
 }
@@ -679,4 +698,10 @@ void MainWindow::configureInfoWidget()
     button->setMaximumWidth(w/6);
     connect(button, SIGNAL(clicked(bool)), m_info_widget, SLOT(close()));
     hlayout2->addWidget(button);
+}
+
+void MainWindow::setSavedStatus(bool is_saved)
+{
+    m_is_saved = is_saved;
+    m_save_action->setEnabled(!is_saved);
 }

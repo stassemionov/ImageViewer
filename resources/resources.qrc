@@ -27,5 +27,6 @@
         <file>redo_icon.png</file>
         <file>save_icon.png</file>
         <file>properties_icon.png</file>
+        <file>wonna_save.png</file>
     </qresource>
 </RCC>

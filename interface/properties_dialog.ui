@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Image properties</string>
+   <string>Original image properties</string>
   </property>
   <property name="modal">
    <bool>true</bool>

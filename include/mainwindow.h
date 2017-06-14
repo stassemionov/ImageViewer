@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QFileInfo>
 #include <QSettings>
+#include <QAction>
 #include <QImage>
 
 #include <labelviewer.h>
@@ -40,7 +41,7 @@ protected slots:
     void onMousePressOnImage(Qt::MouseButton button, QPoint pos);
     void onClearRecentList();
     void onOpenRecentFile();
-    void onSavePicture();
+    bool onSavePicture();
     void onShowInfo();
     void onChangeMode(int);
     void onPrintPicture();
@@ -90,6 +91,7 @@ protected:
     void onBrightnessEdited(int dif);
     // Scaling of current image with size of app's window
     void updateScale();
+    void setSavedStatus(bool is_saved);
 
     // *** events ***
     void closeEvent(QCloseEvent *pEvent);
@@ -107,7 +109,7 @@ private:
     QImage m_intermediate_image;
     // Scale of current image on the screen.
     double m_scale = 1.0;
-    double m_scale_step = 1.2;
+    double m_scale_step = 1.1;
     // Widget to show current image.
     LabelViewer m_screne_label;
     // List and widget for recent opened images.
@@ -136,6 +138,18 @@ private:
     QWidget* m_info_widget = nullptr;
     // History of editor's transformations.
     EditHistory* m_edit_history = nullptr;
+    int m_max_stored_records = 5;
+    // Flag: was this version saved on the disk
+    bool m_is_saved = true;
+
+    // *** Actions
+    //open,save,print,properties, undo,redo
+    QAction* m_open_action = nullptr;
+    QAction* m_save_action = nullptr;
+    QAction* m_print_action = nullptr;
+    QAction* m_properties_action = nullptr;
+    QAction* m_undo_action = nullptr;
+    QAction* m_redo_action = nullptr;
 };
 
 #endif // MAINWINDOW_H
