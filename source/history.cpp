@@ -263,3 +263,23 @@ void EditHistory::removeUnused(int loc_pos)
         m_list.pop_back();
     }
 }
+
+bool EditHistory::isAtStart()
+{
+    return true;
+}
+
+bool EditHistory::isAtEnd()
+{
+    return true;
+}
+
+void EditHistory::jumpToVersion(int index)
+{
+
+}
+
+QImage* EditHistory::getLatestVersion()
+{
+    return nullptr;
+}

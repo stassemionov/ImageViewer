@@ -20,10 +20,14 @@ int main(int argc, char *argv[])
 }
 
 // * Problem with history
-// * List of history
+// * Named list of history
 // * Cutting
 // * Settings (window):
 //      => Load recent image at start
 //      => Step of scaling
 //      => Lenght of recent images list
-// * Configure buttons (active/disactive)
+// * Configuration of editor's buttons (active/disactive)
+// * Turning between current scale and starting scale
+// * Reflections
+// * Pipetka!
+// * Lastik!

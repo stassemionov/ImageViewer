@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>998</width>
-    <height>594</height>
+    <width>994</width>
+    <height>668</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -62,8 +62,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>748</width>
-         <height>533</height>
+         <width>744</width>
+         <height>607</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
@@ -131,7 +131,7 @@
          <x>0</x>
          <y>0</y>
          <width>250</width>
-         <height>568</height>
+         <height>743</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -859,7 +859,7 @@
                      <number>0</number>
                     </property>
                     <item>
-                     <widget class="QLabel" name="label_9">
+                     <widget class="QLabel" name="edit_corner_label">
                       <property name="text">
                        <string>Corner</string>
                       </property>
@@ -929,7 +929,7 @@
                      <number>0</number>
                     </property>
                     <item>
-                     <widget class="QLabel" name="label_10">
+                     <widget class="QLabel" name="edit_size_label">
                       <property name="text">
                        <string>Size</string>
                       </property>
@@ -986,7 +986,7 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <layout class="QVBoxLayout" name="verticalLayout">
              <property name="spacing">
               <number>0</number>
              </property>
@@ -1020,53 +1020,258 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QPushButton" name="edit_left_rot_button">
-                    <property name="toolTip">
-                     <string>Rotate left</string>
+                   <layout class="QVBoxLayout" name="verticalLayout_8">
+                    <property name="spacing">
+                     <number>0</number>
                     </property>
-                    <property name="text">
-                     <string/>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
-                    <property name="icon">
-                     <iconset resource="../resources/resources.qrc">
-                      <normaloff>:/left_rot_icon.png</normaloff>:/left_rot_icon.png</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>20</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                    <property name="autoDefault">
-                     <bool>false</bool>
-                    </property>
-                    <property name="default">
-                     <bool>false</bool>
-                    </property>
-                    <property name="flat">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
+                    <item>
+                     <layout class="QHBoxLayout" name="horizontalLayout_5">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QPushButton" name="edit_left_rot_button">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>40</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>40</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Rotate left</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/resources.qrc">
+                          <normaloff>:/left_rot_icon.png</normaloff>:/left_rot_icon.png</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>30</width>
+                          <height>30</height>
+                         </size>
+                        </property>
+                        <property name="autoDefault">
+                         <bool>false</bool>
+                        </property>
+                        <property name="default">
+                         <bool>false</bool>
+                        </property>
+                        <property name="flat">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="edit_right_rot_button">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>40</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>40</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                        <property name="toolTip">
+                         <string>Rotate right</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../resources/resources.qrc">
+                          <normaloff>:/right_rot_icon.png</normaloff>:/right_rot_icon.png</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>30</width>
+                          <height>30</height>
+                         </size>
+                        </property>
+                        <property name="flat">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <widget class="QLCDNumber" name="edit_rotate_angle_lcd">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>30</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>9999999</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>Angle value</string>
+                      </property>
+                      <property name="frameShape">
+                       <enum>QFrame::Box</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <property name="lineWidth">
+                       <number>1</number>
+                      </property>
+                      <property name="smallDecimalPoint">
+                       <bool>false</bool>
+                      </property>
+                      <property name="digitCount">
+                       <number>7</number>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QGroupBox" name="groupBox_7">
+                      <property name="maximumSize">
+                       <size>
+                        <width>99999</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="title">
+                       <string>Accuracy</string>
+                      </property>
+                      <property name="flat">
+                       <bool>false</bool>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_11">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <layout class="QVBoxLayout" name="verticalLayout_10">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QRadioButton" name="edit_accuracy_high_radioButton">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="text">
+                            <string>High</string>
+                           </property>
+                           <property name="checked">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QRadioButton" name="edit_accuracy_low_radioButton">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
+                           <property name="text">
+                            <string>Low</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                   </layout>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="edit_right_rot_button">
-                    <property name="toolTip">
-                     <string>Rotate right</string>
+                   <widget class="QDial" name="edit_rotate_dial">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../resources/resources.qrc">
-                      <normaloff>:/right_rot_icon.png</normaloff>:/right_rot_icon.png</iconset>
-                    </property>
-                    <property name="iconSize">
+                    <property name="minimumSize">
                      <size>
-                      <width>20</width>
-                      <height>20</height>
+                      <width>60</width>
+                      <height>60</height>
                      </size>
                     </property>
-                    <property name="flat">
+                    <property name="toolTip">
+                     <string>Rotate</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>359</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="wrapping">
+                     <bool>true</bool>
+                    </property>
+                    <property name="notchTarget">
+                     <double>45.000000000000000</double>
+                    </property>
+                    <property name="notchesVisible">
                      <bool>true</bool>
                     </property>
                    </widget>
@@ -1430,7 +1635,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>998</width>
+     <width>994</width>
      <height>22</height>
     </rect>
    </property>

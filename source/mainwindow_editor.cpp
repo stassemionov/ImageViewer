@@ -4,8 +4,11 @@
 
 #include <QTransform>
 #include <omp.h>
+#include <cmath>
 
 #include <QDebug>
+#include <QPainter>
+#include <QImage>
 
 void MainWindow::onUndo()
 {
@@ -17,8 +20,9 @@ void MainWindow::onUndo()
     m_intermediate_image = *prev_image;
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onRedo()
@@ -31,10 +35,10 @@ void MainWindow::onRedo()
     m_intermediate_image = *prev_image;
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
-
 
 void MainWindow::onRotateLeft()
 {
@@ -43,14 +47,9 @@ void MainWindow::onRotateLeft()
         return;
     }
 
-    QTransform transform;
-    m_intermediate_image =
-            m_intermediate_image.transformed(transform.rotate(-90));
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
-    this->setSavedStatus(false);
+    ui->edit_accuracy_low_radioButton->setChecked(true);
+    int v = ui->edit_rotate_dial->value() - 90;
+    ui->edit_rotate_dial->setValue((v >= 0) ? v : (360+v));
 }
 
 void MainWindow::onRotateRight()
@@ -60,11 +59,38 @@ void MainWindow::onRotateRight()
         return;
     }
 
+    ui->edit_accuracy_low_radioButton->setChecked(true);
+    int v = ui->edit_rotate_dial->value() + 90;
+    ui->edit_rotate_dial->setValue((v < 360) ? v : (v-360));
+}
+
+void MainWindow::onRotate(int value)
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    if (ui->edit_accuracy_high_radioButton->isChecked())
+    {
+        // Convert dial angle to real angle
+        double new_angle = m_bisectr_angle + (value - 180) / 4.0;
+        m_angle = (new_angle < 360) ?
+                    ((new_angle >= 0) ? new_angle : (360 + new_angle)) :
+                    (new_angle - 360);
+        ui->edit_rotate_angle_lcd->display(
+            m_angle <= 180 ? m_angle : (m_angle - 360));
+    }
+    else
+    {
+        // Convert dial angle to real angle
+        m_angle = (value <= 180) ? (value + 180) : (value - 180);
+        ui->edit_rotate_angle_lcd->display(value - 180);
+    }
+
     QTransform transform;
-    m_intermediate_image =
-            m_intermediate_image.transformed(transform.rotate(90));
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
+    m_showed_image = m_intermediate_image.
+            transformed(transform.rotate(m_angle));
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
     this->updateScale();
     this->setSavedStatus(false);
@@ -201,8 +227,9 @@ void MainWindow::onRedEdited(int dif)
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onGreenEdited(int dif)
@@ -237,8 +264,9 @@ void MainWindow::onGreenEdited(int dif)
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onBlueEdited(int dif)
@@ -273,8 +301,9 @@ void MainWindow::onBlueEdited(int dif)
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onSaturationEdited(int dif)
@@ -311,8 +340,9 @@ void MainWindow::onSaturationEdited(int dif)
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onBrightnessEdited(int dif)
@@ -350,8 +380,9 @@ void MainWindow::onBrightnessEdited(int dif)
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onUncolourized()
@@ -374,8 +405,9 @@ void MainWindow::onUncolourized()
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }
 
 void MainWindow::onNegatived()
@@ -389,6 +421,7 @@ void MainWindow::onNegatived()
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
+    this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
 }

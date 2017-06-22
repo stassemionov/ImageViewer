@@ -78,6 +78,9 @@ protected slots:
 
     void onRotateLeft();
     void onRotateRight();
+    // Accept value from editor's dial and make required rotation
+    void onRotate(int value);
+    void onChangeRotationMode(bool isLow);
 
 protected:
     // *** service methods ***
@@ -91,7 +94,9 @@ protected:
     void onBrightnessEdited(int dif);
     // Scaling of current image with size of app's window
     void updateScale();
+    void updateView();
     void setSavedStatus(bool is_saved);
+    void updateUndoRedoStatus();
 
     // *** events ***
     void closeEvent(QCloseEvent *pEvent);
@@ -141,6 +146,10 @@ private:
     int m_max_stored_records = 5;
     // Flag: was this version saved on the disk
     bool m_is_saved = true;
+    // Current rotation angle (value in [0:255])
+    double m_angle = 0.0;
+    // Middle of interval of rotation in high accuracy mode
+    double m_bisectr_angle = 0.0;
 
     // *** Actions
     //open,save,print,properties, undo,redo

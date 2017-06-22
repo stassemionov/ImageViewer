@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->statusBar()->hide();
     ui->editor_scroll_area->hide();
     ui->mainToolBar->hide();
+    ui->edit_rotate_dial->setEnabled(false);
 
     m_screne_label.setAlignment(Qt::AlignCenter);
     m_screne_label.setScaledContents(true);
@@ -191,6 +192,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onRotateLeft()));
     connect(ui->edit_right_rot_button, SIGNAL(clicked(bool)),
             this, SLOT(onRotateRight()));
+    connect(ui->edit_rotate_dial, SIGNAL(valueChanged(int)),
+            this, SLOT(onRotate(int)));
+    connect(ui->edit_accuracy_low_radioButton, SIGNAL(toggled(bool)),
+            this, SLOT(onChangeRotationMode(bool)));
 
     connect(ui->edit_brightness_min_button, SIGNAL(clicked(bool)),
             this, SLOT(onBrightnessDec()));
@@ -246,6 +251,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->configureInfoWidget();
 
     this->setSavedStatus(true);
+    this->updateUndoRedoStatus();
 }
 
 MainWindow::~MainWindow()
@@ -381,10 +387,22 @@ bool MainWindow::loadImage(const QString& file_name)
     m_intermediate_image = m_main_image.copy();
     m_showed_image = m_main_image.copy();
     m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
-    this->updateScale();
 
     m_pos_label.setText(QString::fromUtf8(""));
+    ui->edit_rotate_dial->setEnabled(true);
+    m_angle = 0.0;
+    m_bisectr_angle = 0.0;
+    if (ui->edit_accuracy_low_radioButton->isChecked())
+    {
+        ui->edit_rotate_dial->setValue(180);
+    }
+    else
+    {
+        // generates rotation
+        ui->edit_accuracy_low_radioButton->setChecked(true);
+    }
 
+    this->updateScale();
     this->setSavedStatus(true);
 
     return true;
@@ -405,6 +423,17 @@ void MainWindow::updateScale()
     // then image is adjusted to viewport with saving of proportions of image.
     m_scale = (x_scale < 1.0 || y_scale < 1.0) ? qMin(x_scale, y_scale) : 1.0;
     m_screne_label.resize(m_scale * m_showed_image.size());
+}
+
+void MainWindow::updateView()
+{
+    if (m_showed_image.isNull())
+    {
+        return;
+    }
+
+    this->onRotate(ui->edit_rotate_dial->value());
+    this->updateScale();
 }
 
 bool MainWindow::onSavePicture()
@@ -468,7 +497,7 @@ void MainWindow::onChangeMode(int mode)
         ui->viewer_scroll_area->show();
         ui->editor_scroll_area->hide();
         ui->mainToolBar->hide();
-        this->updateScale();
+        this->updateView();
     }
     else if (mode == 2)
     {
@@ -478,7 +507,7 @@ void MainWindow::onChangeMode(int mode)
         ui->viewer_scroll_area->show();
         ui->editor_scroll_area->show();
         ui->mainToolBar->show();
-        this->updateScale();
+        this->updateView();
     }
     else // AppMode::Mode_Browser
     {
@@ -704,4 +733,34 @@ void MainWindow::setSavedStatus(bool is_saved)
 {
     m_is_saved = is_saved;
     m_save_action->setEnabled(!is_saved);
+}
+
+void MainWindow::updateUndoRedoStatus()
+{
+    if (m_edit_history->getHistoryLenght() < 2)
+    {
+        m_undo_action->setDisabled(true);
+        m_redo_action->setDisabled(true);
+    }
+    else
+    {
+        m_undo_action->setEnabled(m_edit_history->isAtStart());
+        m_redo_action->setEnabled(m_edit_history->isAtEnd());
+    }
+}
+
+void MainWindow::onChangeRotationMode(bool isLow)
+{
+    if (isLow)  // new mode is low accuracy
+    {
+        m_bisectr_angle = 0.0;
+        m_angle = (int) m_angle;
+        ui->edit_rotate_dial->setValue(
+            (m_angle < 180) ? (m_angle + 180): (m_angle - 180));
+    }
+    else    // new mode is high accuracy
+    {
+        m_bisectr_angle = m_angle;
+        ui->edit_rotate_dial->setValue(180);
+    }
 }
