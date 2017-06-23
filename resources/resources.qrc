@@ -28,5 +28,6 @@
         <file>save_icon.png</file>
         <file>properties_icon.png</file>
         <file>wonna_save.png</file>
+        <file>original_angle_icon.png</file>
     </qresource>
 </RCC>

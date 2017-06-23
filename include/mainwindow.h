@@ -81,6 +81,7 @@ protected slots:
     // Accept value from editor's dial and make required rotation
     void onRotate(int value);
     void onChangeRotationMode(bool isLow);
+    void onRestoreOriginalAngle();
 
 protected:
     // *** service methods ***
@@ -94,6 +95,7 @@ protected:
     void onBrightnessEdited(int dif);
     // Scaling of current image with size of app's window
     void updateScale();
+    // Updates showed image in accordance in editor's widgets
     void updateView();
     void setSavedStatus(bool is_saved);
     void updateUndoRedoStatus();

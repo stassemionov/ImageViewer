@@ -192,6 +192,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onRotateLeft()));
     connect(ui->edit_right_rot_button, SIGNAL(clicked(bool)),
             this, SLOT(onRotateRight()));
+    connect(ui->edit_original_angle_button, SIGNAL(clicked(bool)),
+            this, SLOT(onRestoreOriginalAngle()));
     connect(ui->edit_rotate_dial, SIGNAL(valueChanged(int)),
             this, SLOT(onRotate(int)));
     connect(ui->edit_accuracy_low_radioButton, SIGNAL(toggled(bool)),
@@ -390,14 +392,13 @@ bool MainWindow::loadImage(const QString& file_name)
 
     m_pos_label.setText(QString::fromUtf8(""));
     ui->edit_rotate_dial->setEnabled(true);
-    m_angle = 0.0;
-    m_bisectr_angle = 0.0;
     if (ui->edit_accuracy_low_radioButton->isChecked())
     {
         ui->edit_rotate_dial->setValue(180);
     }
     else
     {
+        m_angle = 0.0;
         // generates rotation
         ui->edit_accuracy_low_radioButton->setChecked(true);
     }

@@ -96,6 +96,27 @@ void MainWindow::onRotate(int value)
     this->setSavedStatus(false);
 }
 
+void MainWindow::onRestoreOriginalAngle()
+{
+    if (m_showed_image.isNull())
+    {
+        return;
+    }
+    if (m_angle != 0.0)
+    {
+        if (ui->edit_accuracy_low_radioButton->isChecked())
+        {
+            ui->edit_rotate_dial->setValue(180);
+        }
+        else
+        {
+            m_angle = 0.0;
+            // generates rotation
+            ui->edit_accuracy_low_radioButton->setChecked(true);
+        }
+    }
+}
+
 void MainWindow::onBrightnessInc()
 {
     onBrightnessEdited(1);
@@ -207,15 +228,19 @@ void MainWindow::onRedEdited(int dif)
 
     const int w = m_intermediate_image.width();
     const int h = m_intermediate_image.height();
+    m_showed_image = QImage(m_intermediate_image.size(),
+                            m_intermediate_image.format());
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < h; ++i)
     {
-        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+        QRgb* src_colors_line = reinterpret_cast<QRgb*>(
                     m_intermediate_image.scanLine(i));
+        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+                    m_showed_image.scanLine(i));
         for (int j = 0; j < w; ++j)
         {
-            QRgb col = dst_colors_line[j];
+            QRgb col = src_colors_line[j];
             int r = qRed(col) + dif;
             int g = qGreen(col);
             int b = qBlue(col);
@@ -224,9 +249,9 @@ void MainWindow::onRedEdited(int dif)
                         g, b, qAlpha(col));
         }
     }
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+
+    m_edit_history->add(m_showed_image);
+    m_intermediate_image = m_showed_image.copy();
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -243,15 +268,19 @@ void MainWindow::onGreenEdited(int dif)
 
     const int w = m_intermediate_image.width();
     const int h = m_intermediate_image.height();
+    m_showed_image = QImage(m_intermediate_image.size(),
+                            m_intermediate_image.format());
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < h; ++i)
     {
-        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+        QRgb* src_colors_line = reinterpret_cast<QRgb*>(
                     m_intermediate_image.scanLine(i));
+        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+                    m_showed_image.scanLine(i));
         for (int j = 0; j < w; ++j)
         {
-            QRgb col = dst_colors_line[j];
+            QRgb col = src_colors_line[j];
             int r = qRed(col);
             int g = qGreen(col) + dif;
             int b = qBlue(col);
@@ -261,9 +290,9 @@ void MainWindow::onGreenEdited(int dif)
                         b, qAlpha(col));
         }
     }
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+
+    m_edit_history->add(m_showed_image);
+    m_intermediate_image = m_showed_image.copy();
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -280,15 +309,19 @@ void MainWindow::onBlueEdited(int dif)
 
     const int w = m_intermediate_image.width();
     const int h = m_intermediate_image.height();
+    m_showed_image = QImage(m_intermediate_image.size(),
+                            m_intermediate_image.format());
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < h; ++i)
     {
-        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+        QRgb* src_colors_line = reinterpret_cast<QRgb*>(
                     m_intermediate_image.scanLine(i));
+        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+                    m_showed_image.scanLine(i));
         for (int j = 0; j < w; ++j)
         {
-            QRgb col = dst_colors_line[j];
+            QRgb col = src_colors_line[j];
             int r = qRed(col);
             int g = qGreen(col);
             int b = qBlue(col) + dif;
@@ -298,9 +331,9 @@ void MainWindow::onBlueEdited(int dif)
                         qAlpha(col));
         }
     }
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+
+    m_edit_history->add(m_showed_image);
+    m_intermediate_image = m_showed_image.copy();
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -315,6 +348,8 @@ void MainWindow::onSaturationEdited(int dif)
 
     const int w = m_intermediate_image.width();
     const int h = m_intermediate_image.height();
+    m_showed_image = QImage(m_intermediate_image.size(),
+                            m_intermediate_image.format());
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int j = 0; j < w; ++j)
@@ -334,12 +369,12 @@ void MainWindow::onSaturationEdited(int dif)
                 s = 255;
             }
             pix_col.setHsv(h, s, v);
-            m_intermediate_image.setPixelColor(j, i, pix_col);
+            m_showed_image.setPixelColor(j, i, pix_col);
         }
     }
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+
+    m_edit_history->add(m_showed_image);
+    m_intermediate_image = m_showed_image.copy();
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -354,6 +389,8 @@ void MainWindow::onBrightnessEdited(int dif)
 
     const int w = m_intermediate_image.width();
     const int h = m_intermediate_image.height();
+    m_showed_image = QImage(m_intermediate_image.size(),
+                            m_intermediate_image.format());
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int j = 0; j < w; ++j)
@@ -373,13 +410,12 @@ void MainWindow::onBrightnessEdited(int dif)
                 v = 255;
             }
             pix_col.setHsv(h, s, v);
-            m_intermediate_image.setPixelColor(j, i, pix_col);
+            m_showed_image.setPixelColor(j, i, pix_col);
         }
     }
 
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+    m_edit_history->add(m_showed_image);
+    m_intermediate_image = m_showed_image.copy();
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -392,19 +428,24 @@ void MainWindow::onUncolourized()
         return;
     }
 
-#pragma omp parallel for schedule(dynamic, 1)
-    for (int j = 0; j < m_intermediate_image.width(); ++j)
+    const int w = m_intermediate_image.width();
+    const int h = m_intermediate_image.height();
+    m_showed_image = QImage(m_intermediate_image.size(),
+                            m_intermediate_image.format());
+
+    #pragma omp parallel for schedule(dynamic, 1)
+    for (int j = 0; j < w; ++j)
     {
-        for (int i = 0; i < m_intermediate_image.height(); ++i)
+        for (int i = 0; i < h; ++i)
         {
             QColor pix_col = m_intermediate_image.pixelColor(j, i);
             pix_col.setHsv(pix_col.hue(), 0, pix_col.value());
-            m_intermediate_image.setPixelColor(j, i, pix_col);
+            m_showed_image.setPixelColor(j, i, pix_col);
         }
     }
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+
+    m_edit_history->add(m_showed_image);
+    m_intermediate_image = m_showed_image.copy();
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -420,7 +461,6 @@ void MainWindow::onNegatived()
     m_intermediate_image.invertPixels();
     m_edit_history->add(m_intermediate_image);
     m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
