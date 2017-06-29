@@ -129,7 +129,7 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-140</y>
          <width>250</width>
          <height>733</height>
         </rect>
@@ -1302,6 +1302,9 @@
                     </property>
                     <property name="maximum">
                      <number>359</number>
+                    </property>
+                    <property name="value">
+                     <number>179</number>
                     </property>
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>

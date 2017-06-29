@@ -31,3 +31,4 @@ int main(int argc, char *argv[])
 // * Reflections
 // * Pipetka!
 // * Lastik!
+// * Filters (brute gradations, others)

@@ -5,63 +5,60 @@
 
 #include <QDebug>
 
-
-EditHistory::EditHistory(const QString &filename, int size)
+EditHistory::EditHistory(const QString &filename, int max_size)
 {
     m_filename = filename;
-    if (size > 0)
+    if (max_size > 0)
     {
-        m_max_size = size;
+        m_max_local_storage_size = max_size;
     }
-    m_store_dir = QApplication::applicationDirPath();
+    m_storage_dir = QApplication::applicationDirPath();
     QString app_history_dir = QString::fromUtf8("app_history");
-    QDir dir{m_store_dir};
+    QDir dir{m_storage_dir};
     if (!dir.cd(app_history_dir))
     {
         dir.mkdir(app_history_dir);
     }
-    m_store_dir += QString::fromUtf8("/") + app_history_dir;
+    m_storage_dir += QString::fromUtf8("/") + app_history_dir;
 }
 
 EditHistory::EditHistory(const QString& filename,
-                         const QString& store_directory,
-                         int size)
+                         const QString& storage_directory,
+                         int max_size)
 {
     m_filename = filename;
-    if (size > 0)
+    if (max_size > 0)
     {
-        m_max_size = size;
+        m_max_local_storage_size = max_size;
     }
-    if (store_directory.isEmpty())
+    if (storage_directory.isEmpty())
     {
-        m_store_dir = QApplication::applicationDirPath();
+        m_storage_dir = QApplication::applicationDirPath();
     }
-    QDir dir{store_directory};
+    QDir dir{storage_directory};
     if (!dir.exists())
     {
-        m_store_dir = QApplication::applicationDirPath();
-        dir.setPath(m_store_dir);
+        m_storage_dir = QApplication::applicationDirPath();
+        dir.setPath(m_storage_dir);
     }
     QString app_history_dir = QString::fromUtf8("app_history");
     if (!dir.cd(app_history_dir))
     {
         dir.mkdir(app_history_dir);
     }
-    m_store_dir += QString::fromUtf8("/") + app_history_dir;
+    m_storage_dir += QString::fromUtf8("/") + app_history_dir;
 }
 
 EditHistory::~EditHistory()
 {
-    this->removeUnused(0);
-    QDir dir(m_store_dir);
+    this->clean();
+    QDir dir{m_storage_dir};
     dir.removeRecursively();
-    dir.setPath(this->getStoreDirectory());
-    dir.mkdir(QString::fromUtf8("app_history"));
 }
 
-void EditHistory::setFileName(const QString& name)
+void EditHistory::setFileName(const QString& filename)
 {
-    m_filename = name;
+    m_filename = filename;
 }
 
 QString EditHistory::getFileName()
@@ -74,13 +71,13 @@ bool EditHistory::setStoreDirectory(const QString& dir)
     QDir d(dir);
     if (d.exists())
     {
-        m_store_dir = dir;
+        m_storage_dir = dir;
         QString app_history_dir = QString::fromUtf8("app_history");
         if (!d.cd(app_history_dir))
         {
             d.mkdir(app_history_dir);
         }
-        m_store_dir += QString::fromUtf8("/") + app_history_dir;
+        m_storage_dir += QString::fromUtf8("/") + app_history_dir;
         return true;
     }
     return false;
@@ -88,198 +85,316 @@ bool EditHistory::setStoreDirectory(const QString& dir)
 
 QString EditHistory::getStoreDirectory()
 {
-    return QString(m_store_dir).remove(m_store_dir.length() - 12, 12);
+    int len = QString::fromUtf8("/app_history").length();
+    return QString(m_storage_dir).remove(
+                m_storage_dir.length() - len, len);
 }
 
 bool EditHistory::setMaxStoredCount(int count)
 {
-    if (count > 0)
+    if (count <= 0)
     {
-        m_max_size = count;
-        this->uploadExcessImages();
-        return true;
+        return false;
     }
-    return false;
+
+    m_max_local_storage_size = count;
+
+    if (count < m_list.size())
+    {
+        // Uploading of all excess images.
+        // Firstly, we upload more newer versions.
+        // Secondly, we upload more older versions.
+        int count_to_delete = m_list.size() - count;
+        while (m_list.size() != m_local_pointer + 1)
+        {
+            m_list.back()->save(
+                    QString::fromUtf8("%0/%1__%2").
+                    arg(m_storage_dir).
+                    arg(m_shift + m_list.size() - 1).
+                    arg(m_filename),
+                    0, 100);
+            m_list.pop_back();
+            --count_to_delete;
+        }
+        // If count of uploaded isn't enough, then
+        // upload oldest versions, stored im main memory.
+        while (count_to_delete != 0)
+        {
+            m_list.front()->save(
+                    QString::fromUtf8("%0/%1__%2").
+                    arg(m_storage_dir).
+                    arg(m_shift).
+                    arg(m_filename),
+                    0, 100);
+            m_list.pop_front();
+            ++m_shift;
+            --m_local_pointer;
+            --count_to_delete;
+        }
+    }
+    return true;
 }
 
 int EditHistory::getMaxStoredCount()
 {
-    return m_max_size;
+    return m_max_local_storage_size;
 }
 
 int EditHistory::getHistoryLenght()
 {
-    return m_stored_count;
+    return m_total_stored_count;
 }
 
 void EditHistory::add(const QImage& image)
 {
-    // If list is still not full.
-    if (m_stored_count < m_max_size)
+    if (this->getHistoryLenght() > 1)
     {
-        this->removeUnused(m_pointer + 1);
+        // clear all old images starting with next version.
+        this->removeOutdated();
+    }
+    // If new record fits in allowed memory storage...
+    if (m_local_pointer + 1 < m_max_local_storage_size)
+    {
+        // add of image to history.
         m_list.push_back(new QImage(image.copy()));
-        m_stored_count = m_list.size();
-        ++m_pointer;
+        // update size of history.
+        m_total_stored_count = m_shift + m_list.size();
+        // shift the pointer.
+        ++m_local_pointer;
         return;
     }
 
-    int dif = m_stored_count - m_max_size;
-    if (m_pointer < dif)
-    {
-        QDir dir(m_store_dir);
-        for (int i = m_pointer + 1; i < dif; ++i)
-        {
-            dir.remove(QString::number(i) +
-                       QString::fromUtf8("__") +
-                       m_filename);
-        }
-        this->removeUnused(0);
+    // ... else, if allowed memory storage is filled...
 
-        for (int i = 0; i <= m_pointer; ++i)
-        {
-            m_list.push_back(new QImage(QString::number(i) +
-                                        QString::fromUtf8("__") +
-                                        m_filename));
-        }
-    }
-    else
-    {
-        this->removeUnused(m_pointer - dif + 1);
-
-        int free_in_list = m_max_size - (m_pointer - dif + 1);
-        int to_load = qMin(free_in_list, dif);
-        int load_start_index = qMax(0, dif - free_in_list);
-        for (int i = load_start_index; i < load_start_index + to_load; ++i)
-        {
-            m_list.push_back(new QImage(
-                m_store_dir + QString::fromUtf8("/") +
-                QString::number(i) + QString::fromUtf8("__") + m_filename));
-        }
-    }
+    // Upload and remove from memory the oldest image.
+    QImage* image_to_upload = m_list[0];
+    image_to_upload->save(
+            QString::fromUtf8("%0/%1__%2").
+            arg(m_storage_dir).
+            arg(m_shift).
+            arg(m_filename),
+            0, 100);
+    m_list.pop_front();
+    delete image_to_upload;
+    // Adding of new image.
     m_list.push_back(new QImage(image.copy()));
-    m_stored_count = m_pointer + 2;
-    ++m_pointer;
-    this->uploadExcessImages();
+    // Updating of history parameters.
+    ++m_shift;
+    m_total_stored_count = m_shift + m_list.size();
 }
 
 QImage* EditHistory::back()
 {
-    if (m_pointer < 1)
+    if ((m_shift + m_local_pointer) < 1)
     {
         return nullptr;
     }
 
-    --m_pointer;
-    QImage* res = this->get();
+    if (m_local_pointer != 0)
+    {
+        --m_local_pointer;
+        return new QImage(m_list[m_local_pointer]->copy());
+    }
+    else
+    {
+        QImage* loaded_image = new QImage(
+            QString::fromUtf8("%0/%1__%2").
+            arg(m_storage_dir).
+            arg(m_shift - 1).
+            arg(m_filename));
 
-    return res;
+        if (m_list.size() == m_max_local_storage_size)
+        {
+            QImage* image_to_upload = m_list.back();
+            image_to_upload->save(
+                    QString::fromUtf8("%0/%1__%2").
+                    arg(m_storage_dir).
+                    arg(m_shift + m_list.size() - 1).
+                    arg(m_filename),
+                    0, 100);
+            delete image_to_upload;
+            m_list.pop_back();
+        }
+        m_list.push_front(loaded_image);
+
+        --m_shift;
+
+        return new QImage(loaded_image->copy());
+    }
 }
 
 QImage* EditHistory::forward()
 {
-    if (m_pointer == (m_stored_count - 1))
+    if ((m_shift + m_local_pointer) == (m_total_stored_count - 1))
     {
         return nullptr;
     }
 
-    ++m_pointer;
-    QImage* res = this->get();
-
-    return res;
-}
-
-QImage* EditHistory::get()
-{
-    if (m_stored_count <= m_max_size)
+    if (m_local_pointer != (m_list.size() - 1))
     {
-        return new QImage(m_list[m_pointer]->copy());
+        ++m_local_pointer;
+        return new QImage(m_list[m_local_pointer]->copy());
     }
     else
     {
-        const int dif = m_stored_count - m_max_size;
-        if (m_pointer < dif)    // required image is on hard disk.
+        QImage* loaded_image = new QImage(
+            QString::fromUtf8("%0/%1__%2").
+            arg(m_storage_dir).
+            arg(m_shift + m_list.size()).
+            arg(m_filename));
+
+        if (m_list.size() == m_max_local_storage_size)
         {
-            return new QImage{m_store_dir + QString::fromUtf8("/") +
-                   QString::number(m_pointer) + QString::fromUtf8("__") +
-                   m_filename};
+            QImage* image_to_upload = m_list.front();
+            image_to_upload->save(
+                    QString::fromUtf8("%0/%1__%2").
+                    arg(m_storage_dir).
+                    arg(m_shift).
+                    arg(m_filename),
+                    0, 100);
+            delete image_to_upload;
+            m_list.pop_front();
+            ++m_shift;
         }
-        else    // required image is in main memory.
-        {
-            return new QImage(m_list[m_pointer - dif]->copy());
-        }
+        m_list.push_back(loaded_image);
+
+        return new QImage(loaded_image->copy());
     }
 }
 
 void EditHistory::clean()
 {
-    m_stored_count = 0;
-    m_pointer = -1;
-    this->removeUnused(0);
+    m_local_pointer = -1;
+    m_shift = 0;
+    this->removeOutdated();
+    m_total_stored_count = 0;
 
-    QDir dir(m_store_dir);
+    QDir dir{m_storage_dir};
     dir.removeRecursively();
-
-    dir.setPath(this->getStoreDirectory());
+    dir.cdUp();
     dir.mkdir(QString::fromUtf8("app_history"));
+    dir.cd(QString::fromUtf8("app_history"));
 }
 
-void EditHistory::uploadExcessImages()
+void EditHistory::removeOutdated()
 {
-    if (m_list.size() <= m_max_size)
+    // Current version is up-to-date.
+    if (((m_shift + m_local_pointer + 1) == m_total_stored_count) ||
+        m_list.isEmpty())
     {
         return;
     }
-    int count_to_upload = m_list.size() - m_max_size;
-    int name_index = m_stored_count - m_max_size - 1;
-    while (count_to_upload != 0)
+    // Removing from the disk.
+    QDir dir(m_storage_dir);
+    int first_disk_image_index = m_shift + m_local_pointer + 1;
+    for (int i = first_disk_image_index;
+         i < m_total_stored_count; ++i)
     {
-        if (m_list.front() != nullptr)
-        {
-            m_list.front()->save(m_store_dir + QString::fromUtf8("/") +
-                     QString::number(name_index) +
-                     QString::fromUtf8("__") +
-                     m_filename, 0, 100);
-            delete m_list.front();
-        }
-        m_list.pop_front();
-        --count_to_upload;
-        ++name_index;
+        dir.remove(QString::fromUtf8("%0__%1").
+            arg(i).arg(m_filename));
     }
-}
-
-void EditHistory::removeUnused(int loc_pos)
-{
-    if ((loc_pos < 0) || (loc_pos >= m_list.size()))
+    // Removing from main memory.
+    if (m_local_pointer < m_list.size() - 1)
     {
-        return;
-    }
-    while (m_list.size() != loc_pos)
-    {
-        if (m_list.back() != nullptr)
+        while (m_list.size() != (m_local_pointer + 1))
         {
             delete m_list.back();
+            m_list.pop_back();
         }
-        m_list.pop_back();
     }
+    m_total_stored_count = m_shift + m_local_pointer + 1;
 }
 
 bool EditHistory::isAtStart()
 {
-    return true;
+    if (m_list.isEmpty())
+    {
+        return false;
+    }
+    return (m_shift + m_local_pointer) == 0;
 }
 
 bool EditHistory::isAtEnd()
 {
-    return true;
+    if (m_list.isEmpty())
+    {
+        return false;
+    }
+    return (m_shift + m_local_pointer + 1) == m_total_stored_count;
 }
 
-void EditHistory::jumpToVersion(int index)
+bool EditHistory::jumpToVersion(int index)
 {
-
+    // Check if index is incorrect or out of range.
+    if ((index < 0) ||
+        (index >= m_total_stored_count) ||
+        (index == (m_shift + m_local_pointer)))
+    {
+        return false;
+    }
+    // New index is in list of images stored in memory.
+    if ((index >= m_shift) && (index < (m_shift + m_list.size())))
+    {
+        // Just update a pointer.
+        m_local_pointer = index - m_shift;
+    }
+    else // New index is out of list of images stored in memory.
+    {
+        // Uploading of all memory-stored images list.
+        for (int i = 0; i < m_list.size(); ++i)
+        {
+            m_list[i]->save(
+                QString::fromUtf8("%0/%1__%2").
+                arg(m_storage_dir).
+                arg(m_shift + i).
+                arg(m_filename),
+                0, 100);
+        }
+        m_list.clear();
+        // Creating of new list with one image.
+        m_list.push_back(new QImage(
+            QString::fromUtf8("%0/%1__%2").
+            arg(m_storage_dir).
+            arg(index).
+            arg(m_filename)));
+        // Updating of history parameters.
+        m_shift = index;
+        m_local_pointer = 0;
+    }
+    return true;
 }
 
 QImage* EditHistory::getLatestVersion()
 {
-    return nullptr;
+    // History is empty.
+    if (m_list.isEmpty())
+    {
+        return nullptr;
+    }
+
+    if ((m_shift + m_list.size()) == m_total_stored_count)
+    {
+        return new QImage(QString::fromUtf8("%0/%1__%2").
+                    arg(m_storage_dir).
+                    arg(m_total_stored_count - 1).
+                    arg(m_filename));
+    }
+    else
+    {
+        return new QImage(m_list.back()->copy());
+    }
+}
+
+QImage* EditHistory::getCurrentVersion()
+{
+    if (m_local_pointer < 0)
+    {
+        return nullptr;
+    }
+    return new QImage(m_list[m_local_pointer]->copy());
+}
+
+int EditHistory::getCurrentIndex()
+{
+    return m_shift + m_local_pointer;
 }

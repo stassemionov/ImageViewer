@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "ui_properties_dialog.h"
 
+#include <QStringListModel>
 #include <QDesktopWidget>
 #include <QFileDialog>
 #include <QVBoxLayout>
@@ -177,15 +178,28 @@ MainWindow::MainWindow(QWidget *parent) :
     print_button->setDefaultAction(m_print_action);
     properties_button->setDefaultAction(m_properties_action);
 
+    m_history_combobox = new QComboBox;
+    m_history_stringlist_model = new QStringListModel(
+                m_history_stringlist);
+    m_history_combobox->setModel(m_history_stringlist_model);
+    m_history_combobox->setMaximumWidth(22);
+    connect(m_history_combobox, SIGNAL(activated(int)),
+            this, SLOT(onHistoryJump(int)));
+
     ui->mainToolBar->addWidget(open_file_button);
     ui->mainToolBar->addWidget(undo_button);
     ui->mainToolBar->addWidget(redo_button);
+    ui->mainToolBar->addWidget(m_history_combobox);
     ui->mainToolBar->addWidget(save_button);
     ui->mainToolBar->addWidget(print_button);
     ui->mainToolBar->addWidget(properties_button);
 
+    m_print_action->setDisabled(true);
+    m_properties_action->setDisabled(true);
+
     // *** EDIT HISTORY CREATION *** //
-    m_edit_history = new EditHistory(QString::fromUtf8(""), m_max_stored_records);
+    m_edit_history = new EditHistory(QString::fromUtf8(""),
+                                     m_max_stored_records);
 
     // *** EDITOR WIDGETS SIGNALS AND SLOTS CONNECTION *** //
     connect(ui->edit_left_rot_button, SIGNAL(clicked(bool)),
@@ -351,8 +365,10 @@ bool MainWindow::loadImage(const QString& file_name)
     m_edit_history->clean();
     m_edit_history->setFileName(finfo.fileName());
     m_edit_history->add(m_main_image);
+    m_history_stringlist.clear();
+    this->writeActionName(tr("Original"));
 
-    // searching for name of loaded file in list of recent files
+    // searching for name of loaded file in list of recent files.
     int index = -1;
     for (int i = 0; i < m_recent_files.size(); ++i)
     {
@@ -362,7 +378,7 @@ bool MainWindow::loadImage(const QString& file_name)
             break;
         }
     }
-    // if no then push this name to hte beginning of recent files list
+    // if no then push this name to hte beginning of recent files list.
     if (index == -1)
     {
         m_recent_files.push_front(file_name);
@@ -376,14 +392,14 @@ bool MainWindow::loadImage(const QString& file_name)
         else
             m_recent_files_menu->addAction(p_action);
     }
-    else if (index != 0)    // else, move this name to the beginning of this list
+    else if (index != 0)    // else, move this name to the beginning of this list.
     {
         m_recent_files.move(index, 0);
         m_recent_files_menu->actions().move(index, 0);
     }
     this->updateRecentList();
 
-    // Update histogram
+    // Update histogram.
     ui->edit_hist_label->setPixmap(QPixmap());
 
     m_intermediate_image = m_main_image.copy();
@@ -399,31 +415,17 @@ bool MainWindow::loadImage(const QString& file_name)
     else
     {
         m_angle = 0.0;
-        // generates rotation
+        // generates rotation.
         ui->edit_accuracy_low_radioButton->setChecked(true);
     }
 
+    m_print_action->setEnabled(true);
+    m_properties_action->setEnabled(true);
     this->updateScale();
     this->setSavedStatus(true);
+    this->updateUndoRedoStatus();
 
     return true;
-}
-
-void MainWindow::updateScale()
-{
-    if (m_showed_image.isNull())
-    {
-        return;
-    }
-
-    double x_scale = 1.0 * ui->viewer_scroll_area->viewport()->width() /
-            m_showed_image.width();
-    double y_scale = 1.0 * ui->viewer_scroll_area->viewport()->height() /
-            m_showed_image.height();
-    // If showed image has side that is longer then corresponding size of viewport,
-    // then image is adjusted to viewport with saving of proportions of image.
-    m_scale = (x_scale < 1.0 || y_scale < 1.0) ? qMin(x_scale, y_scale) : 1.0;
-    m_screne_label.resize(m_scale * m_showed_image.size());
 }
 
 void MainWindow::updateView()
@@ -614,6 +616,23 @@ void MainWindow::onImageMoveSignal(QPoint pos)
         qMax(0, ui->viewer_scroll_area->horizontalScrollBar()->value() - pos.x()));
 }
 
+void MainWindow::updateScale()
+{
+    if (m_showed_image.isNull())
+    {
+        return;
+    }
+
+    double x_scale = 1.0 * ui->viewer_scroll_area->viewport()->width() /
+            m_showed_image.width();
+    double y_scale = 1.0 * ui->viewer_scroll_area->viewport()->height() /
+            m_showed_image.height();
+    // If showed image has side that is longer then corresponding size of viewport,
+    // then image is adjusted to viewport with saving of proportions of image.
+    m_scale = (x_scale < 1.0 || y_scale < 1.0) ? qMin(x_scale, y_scale) : 1.0;
+    m_screne_label.resize(m_scale * m_showed_image.size());
+}
+
 void MainWindow::onImageScaled(QWheelEvent* event)
 {
     const bool direction = event->angleDelta().y() > 0;
@@ -745,9 +764,19 @@ void MainWindow::updateUndoRedoStatus()
     }
     else
     {
-        m_undo_action->setEnabled(m_edit_history->isAtStart());
-        m_redo_action->setEnabled(m_edit_history->isAtEnd());
+        m_undo_action->setDisabled(m_edit_history->isAtStart());
+        m_redo_action->setDisabled(m_edit_history->isAtEnd());
     }
+    m_history_combobox->setEnabled(
+        m_edit_history->getHistoryLenght() > 0);
+    m_history_combobox->setCurrentIndex(
+        m_edit_history->getCurrentIndex());
+
+//    qDebug() << "Total     :" << m_edit_history->m_total_stored_count;
+//    qDebug() << "SHift     :" << m_edit_history->m_shift;
+//    qDebug() << "List size :" << m_edit_history->m_list.size();
+//    qDebug() << "Pointer   :" << m_edit_history->m_local_pointer;
+//    qDebug() << "================";
 }
 
 void MainWindow::onChangeRotationMode(bool isLow)
@@ -764,4 +793,24 @@ void MainWindow::onChangeRotationMode(bool isLow)
         m_bisectr_angle = m_angle;
         ui->edit_rotate_dial->setValue(180);
     }
+}
+
+void MainWindow::writeActionName(const QString& act_name)
+{
+    // Current version, stored in history, is new version.
+    int curr_version_index = m_edit_history->getCurrentIndex();
+    // We need to remove all newer versons,
+    // including version with the same index.
+    if (curr_version_index < m_edit_history->getHistoryLenght())
+    {
+        m_history_stringlist.erase(
+            m_history_stringlist.begin() + curr_version_index,
+            m_history_stringlist.end());
+    }
+    m_history_stringlist.append(
+        QString::fromUtf8("%0. %1").
+        arg(curr_version_index + 1).
+        arg(act_name));
+    m_history_stringlist_model->setStringList(m_history_stringlist);
+    m_history_combobox->setCurrentIndex(curr_version_index);
 }

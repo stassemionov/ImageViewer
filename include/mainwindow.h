@@ -1,9 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QStringListModel>
 #include <QSignalMapper>
 #include <QMainWindow>
 #include <QFileInfo>
+#include <QComboBox>
 #include <QSettings>
 #include <QAction>
 #include <QImage>
@@ -49,6 +51,7 @@ protected slots:
     void onImageMoveSignal(QPoint pos);
     void onShowProperties();
     void onImageScaled(QWheelEvent *event);
+    void onHistoryJump(int index);
     void onUndo();
     void onRedo();
 
@@ -99,6 +102,7 @@ protected:
     void updateView();
     void setSavedStatus(bool is_saved);
     void updateUndoRedoStatus();
+    void writeActionName(const QString& act_name);
 
     // *** events ***
     void closeEvent(QCloseEvent *pEvent);
@@ -145,7 +149,11 @@ private:
     QWidget* m_info_widget = nullptr;
     // History of editor's transformations.
     EditHistory* m_edit_history = nullptr;
-    int m_max_stored_records = 5;
+    int m_max_stored_records = 10;
+    // ComboBox to show edit history.
+    QComboBox* m_history_combobox = nullptr;
+    QStringList m_history_stringlist;
+    QStringListModel* m_history_stringlist_model = nullptr;
     // Flag: was this version saved on the disk
     bool m_is_saved = true;
     // Current rotation angle (value in [0:255])
@@ -154,7 +162,6 @@ private:
     double m_bisectr_angle = 0.0;
 
     // *** Actions
-    //open,save,print,properties, undo,redo
     QAction* m_open_action = nullptr;
     QAction* m_save_action = nullptr;
     QAction* m_print_action = nullptr;

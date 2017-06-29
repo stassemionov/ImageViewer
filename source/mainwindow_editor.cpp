@@ -19,7 +19,6 @@ void MainWindow::onUndo()
     }
     m_intermediate_image = *prev_image;
     m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -34,9 +33,21 @@ void MainWindow::onRedo()
     }
     m_intermediate_image = *prev_image;
     m_showed_image = m_intermediate_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
     this->updateView();
     this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
+}
+
+void MainWindow::onHistoryJump(int index)
+{
+    if (!m_edit_history->jumpToVersion(index))
+    {
+        return;
+    }
+    QImage* pix = m_edit_history->getCurrentVersion();
+    m_intermediate_image = *pix;
+    m_showed_image = m_intermediate_image.copy();
+    this->updateView();
     this->updateUndoRedoStatus();
 }
 
@@ -102,7 +113,8 @@ void MainWindow::onRestoreOriginalAngle()
     {
         return;
     }
-    if (m_angle != 0.0)
+
+    if (m_angle != 0.0 && m_angle != 360.0)
     {
         if (ui->edit_accuracy_low_radioButton->isChecked())
         {
@@ -111,110 +123,135 @@ void MainWindow::onRestoreOriginalAngle()
         else
         {
             m_angle = 0.0;
-            // generates rotation
+            // Generates rotation.
             ui->edit_accuracy_low_radioButton->setChecked(true);
         }
+    }
+    else
+    {
+        // Explicit call of scale updating.
+        this->updateScale();
     }
 }
 
 void MainWindow::onBrightnessInc()
 {
     onBrightnessEdited(1);
+    this->writeActionName(tr("Brightness + 1"));
 }
 
 void MainWindow::onSaturationInc()
 {
     onSaturationEdited(1);
+    this->writeActionName(tr("Saturation + 1"));
 }
 
 void MainWindow::onRedInc()
 {
     onRedEdited(1);
+    this->writeActionName(tr("Red colour + 1"));
 }
 
 void MainWindow::onGreenInc()
 {
     onGreenEdited(1);
+    this->writeActionName(tr("Green colour + 1"));
 }
 
 void MainWindow::onBlueInc()
 {
     onBlueEdited(1);
+    this->writeActionName(tr("Blue colour + 1"));
 }
 
 void MainWindow::onBrightnessDec()
 {
     onBrightnessEdited(-1);
+    this->writeActionName(tr("Brightness - 1"));
 }
 
 void MainWindow::onSaturationDec()
 {
     onSaturationEdited(-1);
+    this->writeActionName(tr("Saturation - 1"));
 }
 
 void MainWindow::onRedDec()
 {
     onRedEdited(-1);
+    this->writeActionName(tr("Red colour - 1"));
 }
 
 void MainWindow::onGreenDec()
 {
     onGreenEdited(-1);
+    this->writeActionName(tr("Green colour - 1"));
 }
 
 void MainWindow::onBlueDec()
 {
     onBlueEdited(-1);
+    this->writeActionName(tr("Blue colour - 1"));
 }
 
 void MainWindow::onBrightnessDoubleInc()
 {
     onBrightnessEdited(10);
+    this->writeActionName(tr("Brightness + 10"));
 }
 
 void MainWindow::onSaturationDoubleInc()
 {
     onSaturationEdited(10);
+    this->writeActionName(tr("Saturation + 10"));
 }
 
 void MainWindow::onRedDoubleInc()
 {
     onRedEdited(10);
+    this->writeActionName(tr("Red colour + 10"));
 }
 
 void MainWindow::onGreenDoubleInc()
 {
     onGreenEdited(10);
+    this->writeActionName(tr("Green colour + 10"));
 }
 
 void MainWindow::onBlueDoubleInc()
 {
     onBlueEdited(10);
+    this->writeActionName(tr("Blue colour + 10"));
 }
 
 void MainWindow::onBrightnessDoubleDec()
 {
     onBrightnessEdited(-10);
+    this->writeActionName(tr("Red colour - 10"));
 }
 
 void MainWindow::onSaturationDoubleDec()
 {
     onSaturationEdited(-10);
+    this->writeActionName(tr("Saturation - 10"));
 }
 
 void MainWindow::onRedDoubleDec()
 {
     onRedEdited(-10);
+    this->writeActionName(tr("Red colour - 10"));
 }
 
 void MainWindow::onGreenDoubleDec()
 {
     onGreenEdited(-10);
+    this->writeActionName(tr("Green colour - 10"));
 }
 
 void MainWindow::onBlueDoubleDec()
 {
     onBlueEdited(-10);
+    this->writeActionName(tr("Blue colour - 10"));
 }
 
 void MainWindow::onRedEdited(int dif)
@@ -449,6 +486,7 @@ void MainWindow::onUncolourized()
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
+    this->writeActionName(tr("Uncolourization"));
 }
 
 void MainWindow::onNegatived()
@@ -464,4 +502,5 @@ void MainWindow::onNegatived()
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
+    this->writeActionName(tr("Negative"));
 }
