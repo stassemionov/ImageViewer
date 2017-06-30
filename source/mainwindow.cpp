@@ -402,9 +402,11 @@ bool MainWindow::loadImage(const QString& file_name)
     // Update histogram.
     ui->edit_hist_label->setPixmap(QPixmap());
 
-    m_intermediate_image = m_main_image.copy();
-    m_showed_image = m_main_image.copy();
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+    m_intermediate_image = QSharedPointer<QImage>(
+                new QImage(m_main_image.copy()));
+    m_showed_image = QSharedPointer<QImage>(
+                new QImage(m_main_image.copy()));
+    m_screne_label.setPixmap(QPixmap::fromImage(*m_showed_image));
 
     m_pos_label.setText(QString::fromUtf8(""));
     ui->edit_rotate_dial->setEnabled(true);
@@ -441,7 +443,7 @@ void MainWindow::updateView()
 
 bool MainWindow::onSavePicture()
 {
-    if (m_main_image.isNull())
+    if (m_intermediate_image->isNull())
     {
         return false;
     }
@@ -465,7 +467,7 @@ bool MainWindow::onSavePicture()
     {
         return false;
     }
-    if (m_intermediate_image.save(fileName, 0, 100))
+    if (m_intermediate_image->save(fileName, 0, 100))
     {
         QFileInfo finfo(fileName);
         m_last_save_dir = finfo.path();
@@ -624,13 +626,13 @@ void MainWindow::updateScale()
     }
 
     double x_scale = 1.0 * ui->viewer_scroll_area->viewport()->width() /
-            m_showed_image.width();
+            m_showed_image->width();
     double y_scale = 1.0 * ui->viewer_scroll_area->viewport()->height() /
-            m_showed_image.height();
+            m_showed_image->height();
     // If showed image has side that is longer then corresponding size of viewport,
     // then image is adjusted to viewport with saving of proportions of image.
     m_scale = (x_scale < 1.0 || y_scale < 1.0) ? qMin(x_scale, y_scale) : 1.0;
-    m_screne_label.resize(m_scale * m_showed_image.size());
+    m_screne_label.resize(m_scale * m_showed_image->size());
 }
 
 void MainWindow::onImageScaled(QWheelEvent* event)
@@ -639,8 +641,8 @@ void MainWindow::onImageScaled(QWheelEvent* event)
     const double ratio = (direction ? m_scale_step : (1.0 / m_scale_step)) - 1.0;   // new_scale / old_scale
 
     m_scale = direction ? (m_scale * m_scale_step) : (m_scale / m_scale_step);
-    int new_h = m_scale * m_showed_image.height();
-    int new_w = m_scale * m_showed_image.width();
+    int new_h = m_scale * m_showed_image->height();
+    int new_w = m_scale * m_showed_image->width();
     if ((new_w < ui->viewer_scroll_area->width() / 16)  ||
         (new_h < ui->viewer_scroll_area->height() / 16) ||
         (new_w > ui->viewer_scroll_area->width() * 8)  ||
@@ -654,7 +656,7 @@ void MainWindow::onImageScaled(QWheelEvent* event)
     int new_vvalue = ui->viewer_scroll_area->verticalScrollBar()->value()   + ratio * event->y();
     int new_hvalue = ui->viewer_scroll_area->horizontalScrollBar()->value() + ratio * event->x();
 
-    m_screne_label.resize(m_showed_image.size() * m_scale);
+    m_screne_label.resize(m_showed_image->size() * m_scale);
 
     ui->viewer_scroll_area->horizontalScrollBar()->setValue(new_hvalue > 0 ? new_hvalue : 0);
     ui->viewer_scroll_area->verticalScrollBar()->setValue(new_vvalue > 0 ? new_vvalue : 0);

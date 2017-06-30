@@ -12,13 +12,13 @@
 
 void MainWindow::onUndo()
 {
-    QImage* prev_image = m_edit_history->back();
-    if (prev_image == nullptr)
+    QSharedPointer<QImage> prev_image = m_edit_history->back();
+    if (prev_image.isNull())
     {
         return;
     }
-    m_intermediate_image = *prev_image;
-    m_showed_image = m_intermediate_image.copy();
+    m_intermediate_image = prev_image;
+    m_showed_image.reset(new QImage(prev_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -26,13 +26,13 @@ void MainWindow::onUndo()
 
 void MainWindow::onRedo()
 {
-    QImage* prev_image = m_edit_history->forward();
-    if (prev_image == nullptr)
+    QSharedPointer<QImage> prev_image = m_edit_history->forward();
+    if (prev_image.isNull())
     {
         return;
     }
-    m_intermediate_image = *prev_image;
-    m_showed_image = m_intermediate_image.copy();
+    m_intermediate_image = prev_image;
+    m_showed_image.reset(new QImage(prev_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -44,9 +44,9 @@ void MainWindow::onHistoryJump(int index)
     {
         return;
     }
-    QImage* pix = m_edit_history->getCurrentVersion();
-    m_intermediate_image = *pix;
-    m_showed_image = m_intermediate_image.copy();
+    QSharedPointer<QImage> pix = m_edit_history->getCurrentVersion();
+    m_intermediate_image = pix;
+    m_showed_image.reset(new QImage(pix->copy()));
     this->updateView();
     this->updateUndoRedoStatus();
 }
@@ -100,9 +100,9 @@ void MainWindow::onRotate(int value)
     }
 
     QTransform transform;
-    m_showed_image = m_intermediate_image.
-            transformed(transform.rotate(m_angle));
-    m_screne_label.setPixmap(QPixmap::fromImage(m_showed_image));
+    m_showed_image.reset(new QImage(m_intermediate_image->
+                transformed(transform.rotate(m_angle))));
+    m_screne_label.setPixmap(QPixmap::fromImage(*m_showed_image));
     this->updateScale();
     this->setSavedStatus(false);
 }
@@ -261,20 +261,20 @@ void MainWindow::onRedEdited(int dif)
         return;
     }
 
-    convertToColoured(m_intermediate_image);
+    convertToColoured(*m_intermediate_image);
 
-    const int w = m_intermediate_image.width();
-    const int h = m_intermediate_image.height();
-    m_showed_image = QImage(m_intermediate_image.size(),
-                            m_intermediate_image.format());
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < h; ++i)
     {
         QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-                    m_intermediate_image.scanLine(i));
+                    m_intermediate_image->scanLine(i));
         QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-                    m_showed_image.scanLine(i));
+                    m_showed_image->scanLine(i));
         for (int j = 0; j < w; ++j)
         {
             QRgb col = src_colors_line[j];
@@ -287,8 +287,8 @@ void MainWindow::onRedEdited(int dif)
         }
     }
 
-    m_edit_history->add(m_showed_image);
-    m_intermediate_image = m_showed_image.copy();
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -301,20 +301,20 @@ void MainWindow::onGreenEdited(int dif)
         return;
     }
 
-    convertToColoured(m_intermediate_image);
+    convertToColoured(*m_intermediate_image);
 
-    const int w = m_intermediate_image.width();
-    const int h = m_intermediate_image.height();
-    m_showed_image = QImage(m_intermediate_image.size(),
-                            m_intermediate_image.format());
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < h; ++i)
     {
         QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-                    m_intermediate_image.scanLine(i));
+                    m_intermediate_image->scanLine(i));
         QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-                    m_showed_image.scanLine(i));
+                    m_showed_image->scanLine(i));
         for (int j = 0; j < w; ++j)
         {
             QRgb col = src_colors_line[j];
@@ -328,8 +328,8 @@ void MainWindow::onGreenEdited(int dif)
         }
     }
 
-    m_edit_history->add(m_showed_image);
-    m_intermediate_image = m_showed_image.copy();
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -342,20 +342,20 @@ void MainWindow::onBlueEdited(int dif)
         return;
     }
 
-    convertToColoured(m_intermediate_image);
+    convertToColoured(*m_intermediate_image);
 
-    const int w = m_intermediate_image.width();
-    const int h = m_intermediate_image.height();
-    m_showed_image = QImage(m_intermediate_image.size(),
-                            m_intermediate_image.format());
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int i = 0; i < h; ++i)
     {
         QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-                    m_intermediate_image.scanLine(i));
+                    m_intermediate_image->scanLine(i));
         QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-                    m_showed_image.scanLine(i));
+                    m_showed_image->scanLine(i));
         for (int j = 0; j < w; ++j)
         {
             QRgb col = src_colors_line[j];
@@ -369,8 +369,8 @@ void MainWindow::onBlueEdited(int dif)
         }
     }
 
-    m_edit_history->add(m_showed_image);
-    m_intermediate_image = m_showed_image.copy();
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -383,17 +383,17 @@ void MainWindow::onSaturationEdited(int dif)
         return;
     }
 
-    const int w = m_intermediate_image.width();
-    const int h = m_intermediate_image.height();
-    m_showed_image = QImage(m_intermediate_image.size(),
-                            m_intermediate_image.format());
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int j = 0; j < w; ++j)
     {
         for (int i = 0; i < h; ++i)
         {
-            QColor pix_col = m_intermediate_image.pixelColor(j, i);
+            QColor pix_col = m_intermediate_image->pixelColor(j, i);
             int h,s,v;
             pix_col.getHsv(&h, &s, &v);
             s += dif;
@@ -406,12 +406,12 @@ void MainWindow::onSaturationEdited(int dif)
                 s = 255;
             }
             pix_col.setHsv(h, s, v);
-            m_showed_image.setPixelColor(j, i, pix_col);
+            m_showed_image->setPixelColor(j, i, pix_col);
         }
     }
 
-    m_edit_history->add(m_showed_image);
-    m_intermediate_image = m_showed_image.copy();
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -424,17 +424,17 @@ void MainWindow::onBrightnessEdited(int dif)
         return;
     }
 
-    const int w = m_intermediate_image.width();
-    const int h = m_intermediate_image.height();
-    m_showed_image = QImage(m_intermediate_image.size(),
-                            m_intermediate_image.format());
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int j = 0; j < w; ++j)
     {
         for (int i = 0; i < h; ++i)
         {
-            QColor pix_col = m_intermediate_image.pixelColor(j, i);
+            QColor pix_col = m_intermediate_image->pixelColor(j, i);
             int h,s,v;
             pix_col.getHsv(&h, &s, &v);
             v += dif;
@@ -447,12 +447,12 @@ void MainWindow::onBrightnessEdited(int dif)
                 v = 255;
             }
             pix_col.setHsv(h, s, v);
-            m_showed_image.setPixelColor(j, i, pix_col);
+            m_showed_image->setPixelColor(j, i, pix_col);
         }
     }
 
-    m_edit_history->add(m_showed_image);
-    m_intermediate_image = m_showed_image.copy();
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -465,24 +465,24 @@ void MainWindow::onUncolourized()
         return;
     }
 
-    const int w = m_intermediate_image.width();
-    const int h = m_intermediate_image.height();
-    m_showed_image = QImage(m_intermediate_image.size(),
-                            m_intermediate_image.format());
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
 
     #pragma omp parallel for schedule(dynamic, 1)
     for (int j = 0; j < w; ++j)
     {
         for (int i = 0; i < h; ++i)
         {
-            QColor pix_col = m_intermediate_image.pixelColor(j, i);
+            QColor pix_col = m_intermediate_image->pixelColor(j, i);
             pix_col.setHsv(pix_col.hue(), 0, pix_col.value());
-            m_showed_image.setPixelColor(j, i, pix_col);
+            m_showed_image->setPixelColor(j, i, pix_col);
         }
     }
 
-    m_edit_history->add(m_showed_image);
-    m_intermediate_image = m_showed_image.copy();
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
@@ -496,9 +496,9 @@ void MainWindow::onNegatived()
         return;
     }
 
-    m_intermediate_image.invertPixels();
-    m_edit_history->add(m_intermediate_image);
-    m_showed_image = m_intermediate_image.copy();
+    m_intermediate_image->invertPixels();
+    m_edit_history->add(*m_intermediate_image);
+    m_showed_image.reset(new QImage(m_intermediate_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();

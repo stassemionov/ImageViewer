@@ -1,8 +1,9 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
-#include <QList>
+#include <QSharedPointer>
 #include <QImage>
+#include <QList>
 
 class EditHistory
 {
@@ -31,9 +32,9 @@ public:
     // Create new record with a copy of given image.
     void add(const QImage& image);
     // Getting copy of more older record of history.
-    QImage* back();
+    QSharedPointer<QImage> back();
     // Getting copy of more newer record of history.
-    QImage* forward();
+    QSharedPointer<QImage> forward();
     // Remove all stored images from hard disk and main memory.
     void clean();
 
@@ -46,9 +47,9 @@ public:
     // Jump to version with specified index.
     bool jumpToVersion(int index);
     // Get copy of latest version, that is stored in history.
-    QImage* getLatestVersion();
+    QSharedPointer<QImage> getLatestVersion();
     // Get copy of current version.
-    QImage* getCurrentVersion();
+    QSharedPointer<QImage> getCurrentVersion();
     // Get index of current version.
     int getCurrentIndex();
 
@@ -56,7 +57,7 @@ protected:
     // Removes outdated images from memory and disk.
     void removeOutdated();
     // Get copy of image that is pointed by current pointer.
-    QImage* get();
+    QSharedPointer<QImage> get();
 
 private:
     // Name of the file, for which history was created.

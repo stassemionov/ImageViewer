@@ -107,12 +107,14 @@ bool EditHistory::setMaxStoredCount(int count)
         int count_to_delete = m_list.size() - count;
         while (m_list.size() != m_local_pointer + 1)
         {
-            m_list.back()->save(
+            QImage* im = m_list.back();
+            im->save(
                     QString::fromUtf8("%0/%1__%2").
                     arg(m_storage_dir).
                     arg(m_shift + m_list.size() - 1).
                     arg(m_filename),
                     0, 100);
+            delete im;
             m_list.pop_back();
             --count_to_delete;
         }
@@ -120,12 +122,14 @@ bool EditHistory::setMaxStoredCount(int count)
         // upload oldest versions, stored im main memory.
         while (count_to_delete != 0)
         {
-            m_list.front()->save(
+            QImage* im = m_list.front();
+            im->save(
                     QString::fromUtf8("%0/%1__%2").
                     arg(m_storage_dir).
                     arg(m_shift).
                     arg(m_filename),
                     0, 100);
+            delete im;
             m_list.pop_front();
             ++m_shift;
             --m_local_pointer;
@@ -174,8 +178,8 @@ void EditHistory::add(const QImage& image)
             arg(m_shift).
             arg(m_filename),
             0, 100);
-    m_list.pop_front();
     delete image_to_upload;
+    m_list.pop_front();
     // Adding of new image.
     m_list.push_back(new QImage(image.copy()));
     // Updating of history parameters.
@@ -183,17 +187,18 @@ void EditHistory::add(const QImage& image)
     m_total_stored_count = m_shift + m_list.size();
 }
 
-QImage* EditHistory::back()
+QSharedPointer<QImage> EditHistory::back()
 {
     if ((m_shift + m_local_pointer) < 1)
     {
-        return nullptr;
+        return QSharedPointer<QImage>();
     }
 
     if (m_local_pointer != 0)
     {
         --m_local_pointer;
-        return new QImage(m_list[m_local_pointer]->copy());
+        return QSharedPointer<QImage>(
+                new QImage(m_list[m_local_pointer]->copy()));
     }
     else
     {
@@ -219,21 +224,23 @@ QImage* EditHistory::back()
 
         --m_shift;
 
-        return new QImage(loaded_image->copy());
+        return QSharedPointer<QImage>(
+                new QImage(loaded_image->copy()));
     }
 }
 
-QImage* EditHistory::forward()
+QSharedPointer<QImage> EditHistory::forward()
 {
     if ((m_shift + m_local_pointer) == (m_total_stored_count - 1))
     {
-        return nullptr;
+        return QSharedPointer<QImage>();
     }
 
     if (m_local_pointer != (m_list.size() - 1))
     {
         ++m_local_pointer;
-        return new QImage(m_list[m_local_pointer]->copy());
+        return QSharedPointer<QImage>(
+                new QImage(m_list[m_local_pointer]->copy()));
     }
     else
     {
@@ -258,7 +265,8 @@ QImage* EditHistory::forward()
         }
         m_list.push_back(loaded_image);
 
-        return new QImage(loaded_image->copy());
+        return QSharedPointer<QImage>(
+                new QImage(loaded_image->copy()));
     }
 }
 
@@ -349,6 +357,7 @@ bool EditHistory::jumpToVersion(int index)
                 arg(m_shift + i).
                 arg(m_filename),
                 0, 100);
+            delete m_list[i];
         }
         m_list.clear();
         // Creating of new list with one image.
@@ -364,34 +373,37 @@ bool EditHistory::jumpToVersion(int index)
     return true;
 }
 
-QImage* EditHistory::getLatestVersion()
+QSharedPointer<QImage> EditHistory::getLatestVersion()
 {
     // History is empty.
     if (m_list.isEmpty())
     {
-        return nullptr;
+        return QSharedPointer<QImage>();
     }
 
     if ((m_shift + m_list.size()) == m_total_stored_count)
     {
-        return new QImage(QString::fromUtf8("%0/%1__%2").
+        return QSharedPointer<QImage>(
+                new QImage(QString::fromUtf8("%0/%1__%2").
                     arg(m_storage_dir).
                     arg(m_total_stored_count - 1).
-                    arg(m_filename));
+                    arg(m_filename)));
     }
     else
     {
-        return new QImage(m_list.back()->copy());
+        return QSharedPointer<QImage>(
+                new QImage(m_list.back()->copy()));
     }
 }
 
-QImage* EditHistory::getCurrentVersion()
+QSharedPointer<QImage> EditHistory::getCurrentVersion()
 {
     if (m_local_pointer < 0)
     {
-        return nullptr;
+        return QSharedPointer<QImage>();
     }
-    return new QImage(m_list[m_local_pointer]->copy());
+    return QSharedPointer<QImage>(
+            new QImage(m_list[m_local_pointer]->copy()));
 }
 
 int EditHistory::getCurrentIndex()

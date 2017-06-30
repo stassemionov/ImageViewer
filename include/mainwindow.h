@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QStringListModel>
+#include <QSharedPointer>
 #include <QSignalMapper>
 #include <QMainWindow>
 #include <QFileInfo>
@@ -115,9 +116,9 @@ private:
     // Image which is currently showing.
     QImage m_main_image;
     // Image that is currently on the screen.
-    QImage m_showed_image;
+    QSharedPointer<QImage> m_showed_image;
     // Image that is intermediate result of editor's work.
-    QImage m_intermediate_image;
+    QSharedPointer<QImage> m_intermediate_image;
     // Scale of current image on the screen.
     double m_scale = 1.0;
     double m_scale_step = 1.1;
