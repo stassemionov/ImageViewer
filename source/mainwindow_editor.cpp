@@ -8,7 +8,6 @@
 
 #include <QDebug>
 #include <QPainter>
-#include <QImage>
 
 void MainWindow::onUndo()
 {
@@ -394,18 +393,23 @@ void MainWindow::onSaturationEdited(int dif)
         for (int i = 0; i < h; ++i)
         {
             QColor pix_col = m_intermediate_image->pixelColor(j, i);
-            int h,s,v;
-            pix_col.getHsv(&h, &s, &v);
-            s += dif;
-            if (s < 0)
+            int alpha = pix_col.alpha();
+            if (alpha > 0)
             {
-                s = 0;
+                int h,s,v;
+                pix_col.getHsv(&h, &s, &v);
+                s += dif;
+                if (s < 0)
+                {
+                    s = 0;
+                }
+                else if (s > 255)
+                {
+                    s = 255;
+                }
+                pix_col.setHsv(h, s, v);
+                pix_col.setAlpha(alpha);
             }
-            else if (s > 255)
-            {
-                s = 255;
-            }
-            pix_col.setHsv(h, s, v);
             m_showed_image->setPixelColor(j, i, pix_col);
         }
     }
@@ -435,18 +439,23 @@ void MainWindow::onBrightnessEdited(int dif)
         for (int i = 0; i < h; ++i)
         {
             QColor pix_col = m_intermediate_image->pixelColor(j, i);
-            int h,s,v;
-            pix_col.getHsv(&h, &s, &v);
-            v += dif;
-            if (v < 0)
+            int alpha = pix_col.alpha();
+            if (alpha > 0)
             {
-                v = 0;
+                int h,s,v;
+                pix_col.getHsv(&h, &s, &v);
+                v += dif;
+                if (v < 0)
+                {
+                    v = 0;
+                }
+                else if (v > 255)
+                {
+                    v = 255;
+                }
+                pix_col.setHsv(h, s, v);
+                pix_col.setAlpha(alpha);
             }
-            else if (v > 255)
-            {
-                v = 255;
-            }
-            pix_col.setHsv(h, s, v);
             m_showed_image->setPixelColor(j, i, pix_col);
         }
     }
@@ -476,7 +485,12 @@ void MainWindow::onUncolourized()
         for (int i = 0; i < h; ++i)
         {
             QColor pix_col = m_intermediate_image->pixelColor(j, i);
-            pix_col.setHsv(pix_col.hue(), 0, pix_col.value());
+            int alpha = pix_col.alpha();
+            if (alpha > 0)
+            {
+                pix_col.setHsv(pix_col.hue(), 0, pix_col.value());
+                pix_col.setAlpha(alpha);
+            }
             m_showed_image->setPixelColor(j, i, pix_col);
         }
     }

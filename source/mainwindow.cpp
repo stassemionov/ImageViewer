@@ -467,7 +467,11 @@ bool MainWindow::onSavePicture()
     {
         return false;
     }
-    if (m_intermediate_image->save(fileName, 0, 100))
+    // Rotation before saving to get actual view.
+    QTransform transform;
+    QImage image_to_save = m_intermediate_image->
+                transformed(transform.rotate(m_angle));
+    if (image_to_save.save(fileName, 0, 100))
     {
         QFileInfo finfo(fileName);
         m_last_save_dir = finfo.path();
