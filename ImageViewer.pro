@@ -24,17 +24,20 @@ SOURCES +=\
     source/labelviewer.cpp \
     source/service.cpp \
     source/history.cpp \
-    source/mainwindow_editor.cpp
+    source/mainwindow_editor.cpp \
+    source/filtercustomizer.cpp
 
 HEADERS +=\
     include/mainwindow.h \
     include/labelviewer.h \
     include/service.h \
-    include/history.h
+    include/history.h \
+    include/filtercustomizer.h
 
 FORMS +=\
     interface/mainwindow.ui \
-    interface/properties_dialog.ui
+    interface/properties_dialog.ui \
+    interface/filtercustomizer.ui
 
 RESOURCES += \
     resources/resources.qrc

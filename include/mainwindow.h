@@ -11,6 +11,7 @@
 #include <QAction>
 #include <QImage>
 
+#include <filtercustomizer.h>
 #include <labelviewer.h>
 #include <history.h>
 
@@ -37,6 +38,7 @@ public:
 
 protected slots:
     void onOpenSettings();
+    void onCustomFilterApplied();
 
     void onMouseEnterOnImage();
     void onMouseLeaveOnImage();
@@ -79,6 +81,8 @@ protected slots:
 
     void onUncolourized();
     void onNegatived();
+    void onSmoothing();
+    void onCustomizeFilter();
 
     void onRotateLeft();
     void onRotateRight();
@@ -150,7 +154,7 @@ private:
     QWidget* m_info_widget = nullptr;
     // History of editor's transformations.
     EditHistory* m_edit_history = nullptr;
-    int m_max_stored_records = 10;
+    int m_max_stored_records = 5;
     // ComboBox to show edit history.
     QComboBox* m_history_combobox = nullptr;
     QStringList m_history_stringlist;
@@ -161,6 +165,8 @@ private:
     double m_angle = 0.0;
     // Middle of interval of rotation in high accuracy mode
     double m_bisectr_angle = 0.0;
+    // Widget for user's filter customization.
+    QSharedPointer<FilterCustomizer> m_filter_customizer;
 
     // *** Actions
     QAction* m_open_action = nullptr;

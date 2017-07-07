@@ -35,6 +35,5 @@
 		<file>sepia_icon.png</file>
 		<file>custom_filter_icon.png</file>
 		<file>clarity_icon.png</file>
-		<file>warning_icon.png</file>
     </qresource>
 </RCC>

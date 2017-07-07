@@ -4,6 +4,13 @@
 #include <QString>
 #include <QImage>
 
+typedef struct RgbColor
+{
+    double r;
+    double g;
+    double b;
+} RgbColor;
+
 QString loadTextFileData(const QString& filepath);
 
 // Convert input image to format RGB32 if it has uncoloured format.

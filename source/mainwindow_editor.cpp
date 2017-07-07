@@ -264,29 +264,29 @@ void MainWindow::onRedEdited(int dif)
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (int i = 0; i < h; ++i)
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            m_intermediate_image->scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 0; i < w*h; ++i)
     {
-        QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-                    m_intermediate_image->scanLine(i));
-        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-                    m_showed_image->scanLine(i));
-        for (int j = 0; j < w; ++j)
-        {
-            QRgb col = src_colors_line[j];
-            int r = qRed(col) + dif;
-            int g = qGreen(col);
-            int b = qBlue(col);
-            dst_colors_line[j] = qRgba(
-                        (r > 255) ? 255 : ((r < 0) ? 0 : r),
-                        g, b, qAlpha(col));
-        }
+        QRgb col = src_colors_line[i];
+        int r = qRed(col) + dif;
+        int g = qGreen(col);
+        int b = qBlue(col);
+        dst_colors_line[i] = qRgba(
+                    (r > 255) ? 255 : ((r < 0) ? 0 : r),
+                    g, b, qAlpha(col));
     }
 
     m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
@@ -304,30 +304,30 @@ void MainWindow::onGreenEdited(int dif)
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (int i = 0; i < h; ++i)
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            m_intermediate_image->scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 0; i < w*h; ++i)
     {
-        QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-                    m_intermediate_image->scanLine(i));
-        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-                    m_showed_image->scanLine(i));
-        for (int j = 0; j < w; ++j)
-        {
-            QRgb col = src_colors_line[j];
-            int r = qRed(col);
-            int g = qGreen(col) + dif;
-            int b = qBlue(col);
-            dst_colors_line[j] = qRgba(
-                        r,
-                        (g > 255) ? 255 : ((g < 0) ? 0 : g),
-                        b, qAlpha(col));
-        }
+        QRgb col = src_colors_line[i];
+        int r = qRed(col);
+        int g = qGreen(col) + dif;
+        int b = qBlue(col);
+        dst_colors_line[i] = qRgba(
+                    r,
+                    (g > 255) ? 255 : ((g < 0) ? 0 : g),
+                    b, qAlpha(col));
     }
 
     m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
@@ -345,30 +345,30 @@ void MainWindow::onBlueEdited(int dif)
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (int i = 0; i < h; ++i)
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            m_intermediate_image->scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 0; i < w*h; ++i)
     {
-        QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-                    m_intermediate_image->scanLine(i));
-        QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-                    m_showed_image->scanLine(i));
-        for (int j = 0; j < w; ++j)
-        {
-            QRgb col = src_colors_line[j];
-            int r = qRed(col);
-            int g = qGreen(col);
-            int b = qBlue(col) + dif;
-            dst_colors_line[j] = qRgba(
-                        r, g,
-                        (b > 255) ? 255 : ((b < 0) ? 0 : b),
-                        qAlpha(col));
-        }
+        QRgb col = src_colors_line[i];
+        int r = qRed(col);
+        int g = qGreen(col);
+        int b = qBlue(col) + dif;
+        dst_colors_line[i] = qRgba(
+                    r, g,
+                    (b > 255) ? 255 : ((b < 0) ? 0 : b),
+                    qAlpha(col));
     }
 
     m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
@@ -384,37 +384,37 @@ void MainWindow::onSaturationEdited(int dif)
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (int j = 0; j < w; ++j)
+    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 0; i < w*h; ++i)
     {
-        for (int i = 0; i < h; ++i)
+        int row = i / w, col = i % w;
+        QColor pix_col = m_intermediate_image->pixelColor(col, row);
+        int alpha = pix_col.alpha();
+        if (alpha > 0)
         {
-            QColor pix_col = m_intermediate_image->pixelColor(j, i);
-            int alpha = pix_col.alpha();
-            if (alpha > 0)
+            int h,s,v;
+            pix_col.getHsv(&h, &s, &v);
+            s += dif;
+            if (s < 0)
             {
-                int h,s,v;
-                pix_col.getHsv(&h, &s, &v);
-                s += dif;
-                if (s < 0)
-                {
-                    s = 0;
-                }
-                else if (s > 255)
-                {
-                    s = 255;
-                }
-                pix_col.setHsv(h, s, v);
-                pix_col.setAlpha(alpha);
+                s = 0;
             }
-            m_showed_image->setPixelColor(j, i, pix_col);
+            else if (s > 255)
+            {
+                s = 255;
+            }
+            pix_col.setHsv(h, s, v);
+            pix_col.setAlpha(alpha);
         }
+        m_showed_image->setPixelColor(col, row, pix_col);
     }
 
     m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
@@ -430,37 +430,31 @@ void MainWindow::onBrightnessEdited(int dif)
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (int j = 0; j < w; ++j)
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            m_intermediate_image->scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 0; i < w*h; ++i)
     {
-        for (int i = 0; i < h; ++i)
-        {
-            QColor pix_col = m_intermediate_image->pixelColor(j, i);
-            int alpha = pix_col.alpha();
-            if (alpha > 0)
-            {
-                int h,s,v;
-                pix_col.getHsv(&h, &s, &v);
-                v += dif;
-                if (v < 0)
-                {
-                    v = 0;
-                }
-                else if (v > 255)
-                {
-                    v = 255;
-                }
-                pix_col.setHsv(h, s, v);
-                pix_col.setAlpha(alpha);
-            }
-            m_showed_image->setPixelColor(j, i, pix_col);
-        }
+        QRgb col = src_colors_line[i];
+        int r = qRed(col)   + dif;
+        int g = qGreen(col) + dif;
+        int b = qBlue(col)  + dif;
+        dst_colors_line[i] = qRgba(
+                    (r > 255) ? 255 : ((r < 0) ? 0 : r),
+                    (g > 255) ? 255 : ((g < 0) ? 0 : g),
+                    (b > 255) ? 255 : ((b < 0) ? 0 : b),
+                    qAlpha(col));
     }
 
     m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
@@ -476,26 +470,44 @@ void MainWindow::onUncolourized()
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (int j = 0; j < w; ++j)
+    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 0; i < w*h; ++i)
     {
-        for (int i = 0; i < h; ++i)
+        int row = i / w, col = i % w;
+        QColor pix_col = m_intermediate_image->pixelColor(col, row);
+        int alpha = pix_col.alpha();
+        if (alpha > 0)
         {
-            QColor pix_col = m_intermediate_image->pixelColor(j, i);
-            int alpha = pix_col.alpha();
-            if (alpha > 0)
-            {
-                pix_col.setHsv(pix_col.hue(), 0, pix_col.value());
-                pix_col.setAlpha(alpha);
-            }
-            m_showed_image->setPixelColor(j, i, pix_col);
+            pix_col.setHsv(pix_col.hue(), 0, pix_col.value());
+            pix_col.setAlpha(alpha);
         }
+        m_showed_image->setPixelColor(col, row, pix_col);
     }
 
+  //  QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+  //          m_intermediate_image->scanLine(0));
+  //  QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+  //          m_showed_image->scanLine(0));
+  //
+  //  #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+  //  for (int i = 0; i < w*h; ++i)
+  //  {
+  //      // (11B+30R+59G)/100 )
+  //      QRgb col = src_colors_line[i];
+  //      int r = 30 * qRed(col);
+  //      int g = 59 * qGreen(col);
+  //      int b = 11 * qBlue(col);
+  //      int s = (r + g + b) / 100;
+  //      dst_colors_line[i] = qRgba(s,s,s,
+  //                  qAlpha(col));
+  //  }
+
     m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
@@ -512,9 +524,151 @@ void MainWindow::onNegatived()
 
     m_intermediate_image->invertPixels();
     m_edit_history->add(*m_intermediate_image);
+    m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
     this->writeActionName(tr("Negative"));
+}
+
+void MainWindow::onSmoothing()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    convertToColoured(*m_intermediate_image);
+
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.clear();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
+
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            m_intermediate_image->scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+//    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
+    for (int i = 1; i < (h-1); ++i)
+    {
+        for (int j = 1; j < (w-1); ++j)
+        {
+            if (qAlpha(src_colors_line[i*w+j]) == 0)
+            {
+                continue;
+            }
+
+            /*
+
+       //     QRgb col11 = src_colors_line[(i-1)*w+j-1];
+            QRgb col12 = src_colors_line[(i-1)*w+j];
+       //     QRgb col13 = src_colors_line[(i-1)*w+j+1];
+            QRgb col21 = src_colors_line[i*w+j-1];
+            QRgb col22 = src_colors_line[i*w+j];
+            QRgb col23 = src_colors_line[i*w+j+1];
+     //       QRgb col31 = src_colors_line[(i+1)*w+j-1];
+            QRgb col32 = src_colors_line[(i+1)*w+j];
+     //       QRgb col33 = src_colors_line[(i+1)*w+j+1];
+
+            int r = (qRed(col12) +
+                     qRed(col21) + qRed(col22) + qRed(col23) +
+                      qRed(col32) ) / 5;
+            int g = (qGreen(col12) +
+                     qGreen(col21) + qGreen(col22) + qGreen(col23) +
+                     qGreen(col32) ) / 5;
+            int b = (qBlue(col12) +
+                     qBlue(col21) + qBlue(col22) + qBlue(col23) +
+                     qBlue(col32)) / 5;
+        */
+
+            QRgb col11 = src_colors_line[(i-1)*w+j-1];
+            QRgb col12 = src_colors_line[(i-1)*w+j];
+            QRgb col13 = src_colors_line[(i-1)*w+j+1];
+            QRgb col21 = src_colors_line[i*w+j-1];
+            QRgb col22 = src_colors_line[i*w+j];
+            QRgb col23 = src_colors_line[i*w+j+1];
+            QRgb col31 = src_colors_line[(i+1)*w+j-1];
+            QRgb col32 = src_colors_line[(i+1)*w+j];
+            QRgb col33 = src_colors_line[(i+1)*w+j+1];
+
+            int r = (qRed(col11) + qRed(col12) + qRed(col13) +
+                     qRed(col21) + qRed(col22) + qRed(col23) +
+                     qRed(col31) + qRed(col32) + qRed(col33)) / 9;
+            int g = (qGreen(col11) + qGreen(col12) + qGreen(col13) +
+                     qGreen(col21) + qGreen(col22) + qGreen(col23) +
+                     qGreen(col31) + qGreen(col32) + qGreen(col33)) / 9;
+            int b = (qBlue(col11) + qBlue(col12) + qBlue(col13) +
+                     qBlue(col21) + qBlue(col22) + qBlue(col23) +
+                     qBlue(col31) + qBlue(col32) + qBlue(col33)) / 9;
+            dst_colors_line[i*w+j] = qRgba(r, g, b, qAlpha(col22));
+        }
+    }
+
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
+    this->updateView();
+    this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
+    this->writeActionName(tr("Smoothing"));
+}
+
+void MainWindow::onCustomFilterApplied()
+{
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    m_showed_image.clear();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
+
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            m_intermediate_image->scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    int mat_size = m_filter_customizer->getMatrixSize();
+    int border = mat_size / 2;
+    const QVector<double>& mat_data = m_filter_customizer->getMatrixData();
+
+    for (int i = border; i < (h-border); ++i)
+    {
+        for (int j = border; j < (w-border); ++j)
+        {
+            int alpha = qAlpha(src_colors_line[i*w+j]);
+            if (alpha == 0)
+            {
+                continue;
+            }
+
+            RgbColor dst_col{0.0, 0.0, 0.0};
+            for (int ii = -border; ii <= border; ++ii)
+            {
+                for (int jj = -border; jj <= border; ++jj)
+                {
+                    double coef = mat_data[(ii+border)*mat_size + (jj+border)];
+                    QRgb src_col = src_colors_line[(i+ii)*w+(j+jj)];
+                    dst_col.r += qRed(src_col) * coef;
+                    dst_col.g += qGreen(src_col) * coef;
+                    dst_col.b += qBlue(src_col) * coef;
+                }
+            }
+            dst_colors_line[i*w+j] = qRgba(
+                ((dst_col.r < 255) ? ((dst_col.r >= 0) ? dst_col.r : 0) : 255),
+                ((dst_col.g < 255) ? ((dst_col.g >= 0) ? dst_col.g : 0) : 255),
+                ((dst_col.b < 255) ? ((dst_col.b >= 0) ? dst_col.b : 0) : 255),
+                alpha);
+        }
+    }
+
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
+    this->updateView();
+    this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
+    this->writeActionName(tr("Custom filter"));
 }

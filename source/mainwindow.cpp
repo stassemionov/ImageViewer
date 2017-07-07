@@ -182,7 +182,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_history_stringlist_model = new QStringListModel(
                 m_history_stringlist);
     m_history_combobox->setModel(m_history_stringlist_model);
-    m_history_combobox->setMaximumWidth(22);
+    m_history_combobox->setMinimumWidth(150);
     connect(m_history_combobox, SIGNAL(activated(int)),
             this, SLOT(onHistoryJump(int)));
 
@@ -262,6 +262,22 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onNegatived()));
     connect(ui->edit_colorize_button, SIGNAL(clicked(bool)),
             this, SLOT(onUncolourized()));
+    connect(ui->edit_blur_button, SIGNAL(clicked(bool)),
+            this, SLOT(onSmoothing()));
+
+    connect(ui->edit_custom_filter_button, SIGNAL(clicked(bool)),
+            this, SLOT(onCustomizeFilter()));
+
+    // Matrix filter customizer signals configuration.
+    m_filter_customizer.reset(new FilterCustomizer);
+    int w = m_filter_customizer->width();
+    int h = m_filter_customizer->height();
+    m_filter_customizer->setGeometry(
+                QApplication::desktop()->width() / 2 - w / 2,
+                QApplication::desktop()->height() / 2 - h / 2,
+                w, h);
+    connect(&(*m_filter_customizer), SIGNAL(matrixUpdated()),
+            this, SLOT(onCustomFilterApplied()));
 
     // *** CONFIGURATION OF INFORMATION WINDOW *** //
     this->configureInfoWidget();
@@ -819,4 +835,14 @@ void MainWindow::writeActionName(const QString& act_name)
         arg(act_name));
     m_history_stringlist_model->setStringList(m_history_stringlist);
     m_history_combobox->setCurrentIndex(curr_version_index);
+}
+
+void MainWindow::onCustomizeFilter()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    m_filter_customizer->show();
 }
