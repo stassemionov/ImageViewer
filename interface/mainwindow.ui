@@ -62,7 +62,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>738</width>
+         <width>728</width>
          <height>618</height>
         </rect>
        </property>
@@ -109,7 +109,7 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>250</width>
+        <width>260</width>
         <height>16777215</height>
        </size>
       </property>
@@ -129,9 +129,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
-         <width>250</width>
-         <height>900</height>
+         <y>-363</y>
+         <width>246</width>
+         <height>981</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -160,7 +160,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>250</width>
+            <width>245</width>
             <height>0</height>
            </size>
           </property>
@@ -770,8 +770,8 @@
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
-                    <height>50</height>
+                    <width>35</width>
+                    <height>35</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1637,54 +1637,88 @@
               <string>Filters</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
-              <property name="bottomMargin">
-               <number>25</number>
+              <property name="leftMargin">
+               <number>0</number>
               </property>
-              <item row="2" column="1">
-               <widget class="QPushButton" name="edit_negative_button">
-                <property name="toolTip">
-                 <string>Photographic negative</string>
-                </property>
-                <property name="statusTip">
-                 <string>Photographic negative</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources/resources.qrc">
-                  <normaloff>:/negative_icon.png</normaloff>:/negative_icon.png</iconset>
-                </property>
-                <property name="iconSize">
+              <property name="topMargin">
+               <number>2</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item row="3" column="1">
+               <layout class="QGridLayout" name="gridLayout_5">
+                <item row="0" column="1">
+                 <widget class="QDoubleSpinBox" name="edit_gauss_parameter_spinBox">
+                  <property name="toolTip">
+                   <string>Standard deviation</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Standard deviation of the Gaussian distribution</string>
+                  </property>
+                  <property name="decimals">
+                   <number>3</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.001000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QSpinBox" name="edit_gauss_radius_spinBox">
+                  <property name="toolTip">
+                   <string>Radius of smoothing</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Radius of smoothing</string>
+                  </property>
+                  <property name="suffix">
+                   <string> px</string>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="8" column="0">
+               <widget class="QPushButton" name="edit_custom_filter_button">
+                <property name="maximumSize">
                  <size>
-                  <width>20</width>
-                  <height>20</height>
+                  <width>50</width>
+                  <height>50</height>
                  </size>
                 </property>
-                <property name="flat">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="edit_median_filter_button">
                 <property name="toolTip">
-                 <string>Apply median filter</string>
+                 <string>Customize user's filter</string>
                 </property>
                 <property name="statusTip">
-                 <string>Apply median filter</string>
+                 <string>Customize user's filter</string>
                 </property>
                 <property name="text">
                  <string/>
                 </property>
                 <property name="icon">
                  <iconset resource="../resources/resources.qrc">
-                  <normaloff>:/median_filter_icon.png</normaloff>:/median_filter_icon.png</iconset>
+                  <normaloff>:/custom_filter_icon.png</normaloff>:/custom_filter_icon.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>30</width>
-                  <height>30</height>
+                  <width>35</width>
+                  <height>35</height>
                  </size>
                 </property>
                 <property name="flat">
@@ -1697,14 +1731,20 @@
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>50</height>
                  </size>
                 </property>
                 <property name="toolTip">
-                 <string>Image bluring</string>
+                 <string>Linear blur</string>
                 </property>
                 <property name="statusTip">
-                 <string>Image bluring</string>
+                 <string>Linear blur</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -1715,8 +1755,8 @@
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>25</width>
-                  <height>25</height>
+                  <width>30</width>
+                  <height>30</height>
                  </size>
                 </property>
                 <property name="flat">
@@ -1724,8 +1764,158 @@
                 </property>
                </widget>
               </item>
+              <item row="10" column="1">
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <property name="rightMargin">
+                 <number>20</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="edit_sepia_button">
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Apply sepia effect</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Apply sepia effect</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../resources/resources.qrc">
+                    <normaloff>:/sepia_icon.png</normaloff>:/sepia_icon.png</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>35</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="edit_negative_button">
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Photographic negative</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Photographic negative</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../resources/resources.qrc">
+                    <normaloff>:/negative_icon.png</normaloff>:/negative_icon.png</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>35</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="edit_colorize_button">
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Decolorize the image</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Decolorize the image</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../resources/resources.qrc">
+                    <normaloff>:/decolorize_icon.png</normaloff>:/decolorize_icon.png</iconset>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>35</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
               <item row="0" column="1">
+               <widget class="QSpinBox" name="edit_linear_blur_spinBox">
+                <property name="mouseTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="toolTip">
+                 <string>Radius of smoothing</string>
+                </property>
+                <property name="statusTip">
+                 <string>Radius of smoothing</string>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::UpDownArrows</enum>
+                </property>
+                <property name="suffix">
+                 <string> px</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QSpinBox" name="edit_median_filter_spinBox">
+                <property name="toolTip">
+                 <string>Radius of smoothing</string>
+                </property>
+                <property name="statusTip">
+                 <string>Radius of smoothing</string>
+                </property>
+                <property name="suffix">
+                 <string> px</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
                <widget class="QPushButton" name="edit_gauss_filter_button">
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>50</height>
+                 </size>
+                </property>
                 <property name="toolTip">
                  <string>Apply Gauss filter</string>
                 </property>
@@ -1750,25 +1940,31 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QPushButton" name="edit_custom_filter_button">
+              <item row="5" column="0">
+               <widget class="QPushButton" name="edit_median_filter_button">
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>50</height>
+                 </size>
+                </property>
                 <property name="toolTip">
-                 <string>Customize user's filter</string>
+                 <string>Apply median filter</string>
                 </property>
                 <property name="statusTip">
-                 <string>Customize user's filter</string>
+                 <string>Apply median filter</string>
                 </property>
                 <property name="text">
                  <string/>
                 </property>
                 <property name="icon">
                  <iconset resource="../resources/resources.qrc">
-                  <normaloff>:/custom_filter_icon.png</normaloff>:/custom_filter_icon.png</iconset>
+                  <normaloff>:/median_filter_icon.png</normaloff>:/median_filter_icon.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>30</width>
-                  <height>30</height>
+                  <width>35</width>
+                  <height>35</height>
                  </size>
                 </property>
                 <property name="flat">
@@ -1776,60 +1972,30 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="2">
-               <widget class="QPushButton" name="edit_sepia_button">
+              <item row="8" column="1">
+               <widget class="QPushButton" name="edit_custom_filter_apply_button">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="toolTip">
-                 <string>Apply sepia effect</string>
+                 <string>Apply current custom filter</string>
                 </property>
                 <property name="statusTip">
-                 <string>Apply sepia effect</string>
+                 <string>Apply current custom filter</string>
                 </property>
                 <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources/resources.qrc">
-                  <normaloff>:/sepia_icon.png</normaloff>:/sepia_icon.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="flat">
-                 <bool>true</bool>
+                 <string>Apply user's filter</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QPushButton" name="edit_colorize_button">
-                <property name="toolTip">
-                 <string>Decolorize the image</string>
-                </property>
-                <property name="statusTip">
-                 <string>Decolorize the image</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources/resources.qrc">
-                  <normaloff>:/decolorize_icon.png</normaloff>:/decolorize_icon.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="flat">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
+              <item row="7" column="0">
                <widget class="QPushButton" name="edit_clarity_button">
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>50</height>
+                 </size>
+                </property>
                 <property name="toolTip">
                  <string>Clarity increasing</string>
                 </property>
@@ -1845,7 +2011,7 @@
                 </property>
                 <property name="iconSize">
                  <size>
-                  <width>35</width>
+                  <width>40</width>
                   <height>35</height>
                  </size>
                 </property>
@@ -1853,6 +2019,63 @@
                  <bool>true</bool>
                 </property>
                </widget>
+              </item>
+              <item row="7" column="1">
+               <layout class="QHBoxLayout" name="horizontalLayout_12">
+                <item>
+                 <widget class="QSlider" name="edit_clarity_slider">
+                  <property name="toolTip">
+                   <string>Sensitivity of filter</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Sensitivity of clarity increasing</string>
+                  </property>
+                  <property name="minimum">
+                   <number>0</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100</number>
+                  </property>
+                  <property name="pageStep">
+                   <number>20</number>
+                  </property>
+                  <property name="value">
+                   <number>50</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="invertedAppearance">
+                   <bool>false</bool>
+                  </property>
+                  <property name="invertedControls">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="edit_clarity_degree_label">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>25</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>50</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>

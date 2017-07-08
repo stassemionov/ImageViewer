@@ -3,6 +3,10 @@
 #include <QTextStream>
 #include <QFile>
 
+#include <omp.h>
+
+#include <QDebug>
+
 QString loadTextFileData(const QString& filepath)
 {
     QFile file{filepath};
@@ -24,6 +28,62 @@ void convertToColoured(QImage& image)
     {
         image = image.convertToFormat(QImage::Format_RGB32);
     }
+}
+
+QImage getExpandedImage(const QImage& image, int dif)
+{
+    int w = image.width();
+    int h = image.height();
+    int new_w = w + 2*dif;
+    int new_h = h + 2*dif;
+    QImage new_image{new_w, new_h, image.format()};
+    new_image.fill(Qt::white);
+
+    const QRgb* src_colors_line = reinterpret_cast<const QRgb*>(
+            image.scanLine(0));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            new_image.scanLine(0));
+
+    for (int i = 0; i < dif; ++i)
+    {
+        memcpy(dst_colors_line + i*new_w + dif,
+               src_colors_line,
+               w * sizeof(QRgb));
+    }
+
+    dst_colors_line = reinterpret_cast<QRgb*>(
+                new_image.scanLine(dif));
+
+    for (int i = 0; i < h; ++i)
+    {
+        QRgb col_left = src_colors_line[i*w];
+        for (int j = 0; j < dif; ++j)
+        {
+            dst_colors_line[i*new_w + j] = col_left;
+        }
+        memcpy(dst_colors_line + i*new_w + dif,
+               src_colors_line + i*w,
+               w * sizeof(QRgb));
+        QRgb col_right = src_colors_line[i*w + w - 1];
+        for (int j = 0; j < dif; ++j)
+        {
+            dst_colors_line[i*new_w + dif + w + j] = col_right;
+        }
+    }
+
+    src_colors_line = reinterpret_cast<const QRgb*>(
+            image.scanLine(h-1));
+    dst_colors_line = reinterpret_cast<QRgb*>(
+                new_image.scanLine(dif + h));
+
+    for (int i = 0; i < dif; ++i)
+    {
+        memcpy(dst_colors_line + i*new_w + dif,
+               src_colors_line,
+               w * sizeof(QRgb));
+    }
+
+    return new_image;
 }
 
 //typedef struct RgbColor

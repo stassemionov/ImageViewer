@@ -81,7 +81,9 @@ protected slots:
 
     void onUncolourized();
     void onNegatived();
-    void onSmoothing();
+    void onLinearSmoothing();
+    void onGaussFilterAppying();
+    void onClarityIncreasing();
     void onCustomizeFilter();
 
     void onRotateLeft();
@@ -108,6 +110,8 @@ protected:
     void setSavedStatus(bool is_saved);
     void updateUndoRedoStatus();
     void writeActionName(const QString& act_name);
+    void applyMatrixFilter(const QVector<double>& mat_data,
+                           int mat_size);
 
     // *** events ***
     void closeEvent(QCloseEvent *pEvent);

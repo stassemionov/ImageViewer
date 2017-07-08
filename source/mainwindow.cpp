@@ -187,10 +187,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(onHistoryJump(int)));
 
     ui->mainToolBar->addWidget(open_file_button);
+    ui->mainToolBar->addWidget(save_button);
     ui->mainToolBar->addWidget(undo_button);
     ui->mainToolBar->addWidget(redo_button);
     ui->mainToolBar->addWidget(m_history_combobox);
-    ui->mainToolBar->addWidget(save_button);
     ui->mainToolBar->addWidget(print_button);
     ui->mainToolBar->addWidget(properties_button);
 
@@ -263,10 +263,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->edit_colorize_button, SIGNAL(clicked(bool)),
             this, SLOT(onUncolourized()));
     connect(ui->edit_blur_button, SIGNAL(clicked(bool)),
-            this, SLOT(onSmoothing()));
-
+            this, SLOT(onLinearSmoothing()));
+    connect(ui->edit_gauss_filter_button, SIGNAL(clicked(bool)),
+            this, SLOT(onGaussFilterAppying()));
     connect(ui->edit_custom_filter_button, SIGNAL(clicked(bool)),
             this, SLOT(onCustomizeFilter()));
+    connect(ui->edit_clarity_button, SIGNAL(clicked(bool)),
+            this, SLOT(onClarityIncreasing()));
+
+    // Other interface connects.
+    connect(ui->edit_clarity_slider, SIGNAL(valueChanged(int)),
+            ui->edit_clarity_degree_label, SLOT(setNum(int)));
 
     // Matrix filter customizer signals configuration.
     m_filter_customizer.reset(new FilterCustomizer);
@@ -277,6 +284,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 QApplication::desktop()->height() / 2 - h / 2,
                 w, h);
     connect(&(*m_filter_customizer), SIGNAL(matrixUpdated()),
+            this, SLOT(onCustomFilterApplied()));
+    connect(ui->edit_custom_filter_apply_button, SIGNAL(clicked(bool)),
             this, SLOT(onCustomFilterApplied()));
 
     // *** CONFIGURATION OF INFORMATION WINDOW *** //
@@ -439,6 +448,7 @@ bool MainWindow::loadImage(const QString& file_name)
 
     m_print_action->setEnabled(true);
     m_properties_action->setEnabled(true);
+    ui->edit_custom_filter_apply_button->setDisabled(true);
     this->updateScale();
     this->setSavedStatus(true);
     this->updateUndoRedoStatus();
@@ -843,6 +853,5 @@ void MainWindow::onCustomizeFilter()
     {
         return;
     }
-
     m_filter_customizer->show();
 }

@@ -88,7 +88,7 @@
      <item>
       <widget class="QPushButton" name="cancel_button">
        <property name="text">
-        <string>Cancel</string>
+        <string>Close</string>
        </property>
       </widget>
      </item>
@@ -139,8 +139,30 @@
          <double>99999.990000000005239</double>
         </property>
         <property name="value">
-         <double>9.000000000000000</double>
+         <double>1.000000000000000</double>
         </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="norms_names_comboBox">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>Summa</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Euclid norm</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Maximum item</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

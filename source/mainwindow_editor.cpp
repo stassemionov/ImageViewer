@@ -428,6 +428,8 @@ void MainWindow::onBrightnessEdited(int dif)
         return;
     }
 
+    convertToColoured(*m_intermediate_image);
+
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
     m_showed_image.clear();
@@ -467,6 +469,8 @@ void MainWindow::onUncolourized()
     {
         return;
     }
+
+//    convertToColoured(*m_intermediate_image);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -532,125 +536,139 @@ void MainWindow::onNegatived()
     this->writeActionName(tr("Negative"));
 }
 
-void MainWindow::onSmoothing()
+void MainWindow::onLinearSmoothing()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+    int mat_size = 2 * ui->edit_linear_blur_spinBox->value() + 1;
+    double el = 1.0 / (mat_size * mat_size);
+    QVector<double> mat_data(mat_size * mat_size);
+
+    for (int i = 0; i < mat_size; ++i)
+    {
+        for (int j = 0; j < mat_size; ++j)
+        {
+            mat_data[i*mat_size+j] = el;
+        }
+    }
+    this->applyMatrixFilter(mat_data, mat_size);
+    this->writeActionName(tr("Linear blur") +
+        QString::fromUtf8(" %1 px").
+        arg(ui->edit_linear_blur_spinBox->value()));
+}
+
+void MainWindow::onGaussFilterAppying()
 {
     if (m_intermediate_image.isNull())
     {
         return;
     }
 
-    convertToColoured(*m_intermediate_image);
+    int radius = ui->edit_gauss_radius_spinBox->value();
+    int mat_size = 2 * radius + 1;
+    double param = ui->edit_gauss_parameter_spinBox->value();
+    double sigma2 = 2 * param * param;
+    double lin_coef = 1.0 / (M_PIl * sigma2);
+    double exp_coef = -1.0 / sigma2;
+    QVector<double> mat_data(mat_size * mat_size);
 
-    const int w = m_intermediate_image->width();
-    const int h = m_intermediate_image->height();
-    m_showed_image.clear();
-    m_showed_image.reset(new QImage(m_intermediate_image->size(),
-                           m_intermediate_image->format()));
-
-    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-            m_intermediate_image->scanLine(0));
-    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
-            m_showed_image->scanLine(0));
-
-//    #pragma omp parallel for schedule(dynamic, (w*h)/omp_get_num_threads())
-    for (int i = 1; i < (h-1); ++i)
+    double sum = 0.0;
+    for (int i = -radius; i <= radius; ++i)
     {
-        for (int j = 1; j < (w-1); ++j)
+        for (int j = -radius; j <= radius; ++j)
         {
-            if (qAlpha(src_colors_line[i*w+j]) == 0)
-            {
-                continue;
-            }
-
-            /*
-
-       //     QRgb col11 = src_colors_line[(i-1)*w+j-1];
-            QRgb col12 = src_colors_line[(i-1)*w+j];
-       //     QRgb col13 = src_colors_line[(i-1)*w+j+1];
-            QRgb col21 = src_colors_line[i*w+j-1];
-            QRgb col22 = src_colors_line[i*w+j];
-            QRgb col23 = src_colors_line[i*w+j+1];
-     //       QRgb col31 = src_colors_line[(i+1)*w+j-1];
-            QRgb col32 = src_colors_line[(i+1)*w+j];
-     //       QRgb col33 = src_colors_line[(i+1)*w+j+1];
-
-            int r = (qRed(col12) +
-                     qRed(col21) + qRed(col22) + qRed(col23) +
-                      qRed(col32) ) / 5;
-            int g = (qGreen(col12) +
-                     qGreen(col21) + qGreen(col22) + qGreen(col23) +
-                     qGreen(col32) ) / 5;
-            int b = (qBlue(col12) +
-                     qBlue(col21) + qBlue(col22) + qBlue(col23) +
-                     qBlue(col32)) / 5;
-        */
-
-            QRgb col11 = src_colors_line[(i-1)*w+j-1];
-            QRgb col12 = src_colors_line[(i-1)*w+j];
-            QRgb col13 = src_colors_line[(i-1)*w+j+1];
-            QRgb col21 = src_colors_line[i*w+j-1];
-            QRgb col22 = src_colors_line[i*w+j];
-            QRgb col23 = src_colors_line[i*w+j+1];
-            QRgb col31 = src_colors_line[(i+1)*w+j-1];
-            QRgb col32 = src_colors_line[(i+1)*w+j];
-            QRgb col33 = src_colors_line[(i+1)*w+j+1];
-
-            int r = (qRed(col11) + qRed(col12) + qRed(col13) +
-                     qRed(col21) + qRed(col22) + qRed(col23) +
-                     qRed(col31) + qRed(col32) + qRed(col33)) / 9;
-            int g = (qGreen(col11) + qGreen(col12) + qGreen(col13) +
-                     qGreen(col21) + qGreen(col22) + qGreen(col23) +
-                     qGreen(col31) + qGreen(col32) + qGreen(col33)) / 9;
-            int b = (qBlue(col11) + qBlue(col12) + qBlue(col13) +
-                     qBlue(col21) + qBlue(col22) + qBlue(col23) +
-                     qBlue(col31) + qBlue(col32) + qBlue(col33)) / 9;
-            dst_colors_line[i*w+j] = qRgba(r, g, b, qAlpha(col22));
+            double r2 = i*i + j*j;
+            double val = lin_coef * exp(r2 * exp_coef);
+            mat_data[(i+radius)*mat_size+(j+radius)] = val;
+            sum += val;
         }
     }
+    for (int i = 0; i < mat_data.size(); ++i)
+    {
+        mat_data[i] /= sum;
+    }
 
-    m_edit_history->add(*m_showed_image);
-    m_intermediate_image.clear();
-    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
-    this->updateView();
-    this->setSavedStatus(false);
-    this->updateUndoRedoStatus();
-    this->writeActionName(tr("Smoothing"));
+    this->applyMatrixFilter(mat_data, mat_size);
+    this->writeActionName(tr("Gauss filter") +
+        QString::fromUtf8(" %1 px").arg(radius));
 }
 
 void MainWindow::onCustomFilterApplied()
 {
+    this->applyMatrixFilter(
+        m_filter_customizer->getMatrixData(),
+        m_filter_customizer->getMatrixSize());
+    this->writeActionName(tr("Custom filter"));
+    ui->edit_custom_filter_apply_button->setEnabled(true);
+}
+
+void MainWindow::onClarityIncreasing()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    QVector<double> mat_data = QVector<double>(9, -1.0);
+    double kernel = 9 + 8 * (1 - ui->edit_clarity_slider->value()/100.0);
+    double norm = kernel - 8;
+    mat_data[4] = kernel;
+    if (norm > 1.0)
+    {
+        for (int i = 0; i < mat_data.size(); ++i)
+        {
+            mat_data[i] /= norm;
+        }
+    }
+
+    this->applyMatrixFilter(mat_data, 3);
+    this->writeActionName(tr("Clarity increase") +
+        QString::fromUtf8(" %1 %").
+        arg(ui->edit_clarity_slider->value()));
+}
+
+void MainWindow::applyMatrixFilter(
+        const QVector<double>& mat_data, int mat_size)
+{
+    convertToColoured(*m_intermediate_image);
+
+    int radius = mat_size / 2;
+    QImage temp_image = getExpandedImage(*m_intermediate_image, radius);
+
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
+    const int temp_w = w + 2*radius;
     m_showed_image.clear();
     m_showed_image.reset(new QImage(m_intermediate_image->size(),
                            m_intermediate_image->format()));
 
     QRgb* src_colors_line = reinterpret_cast<QRgb*>(
-            m_intermediate_image->scanLine(0));
+            temp_image.scanLine(radius));
     QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
             m_showed_image->scanLine(0));
 
-    int mat_size = m_filter_customizer->getMatrixSize();
-    int border = mat_size / 2;
-    const QVector<double>& mat_data = m_filter_customizer->getMatrixData();
+//    double t = omp_get_wtime();
 
-    for (int i = border; i < (h-border); ++i)
+    #pragma omp parallel for schedule(dynamic, h/omp_get_num_threads())
+    for (int i = 0; i < h; ++i)
     {
-        for (int j = border; j < (w-border); ++j)
+        for (int j = 0; j < w; ++j)
         {
-            int alpha = qAlpha(src_colors_line[i*w+j]);
+            int alpha = qAlpha(src_colors_line[i*temp_w + radius + j]);
             if (alpha == 0)
             {
                 continue;
             }
 
             RgbColor dst_col{0.0, 0.0, 0.0};
-            for (int ii = -border; ii <= border; ++ii)
+            for (int ii = -radius; ii <= radius; ++ii)
             {
-                for (int jj = -border; jj <= border; ++jj)
+                for (int jj = -radius; jj <= radius; ++jj)
                 {
-                    double coef = mat_data[(ii+border)*mat_size + (jj+border)];
-                    QRgb src_col = src_colors_line[(i+ii)*w+(j+jj)];
+                    double coef = mat_data[(ii+radius)*mat_size + (jj+radius)];
+                    QRgb src_col = src_colors_line[(i+ii)*temp_w + radius+(j+jj)];
                     dst_col.r += qRed(src_col) * coef;
                     dst_col.g += qGreen(src_col) * coef;
                     dst_col.b += qBlue(src_col) * coef;
@@ -664,11 +682,12 @@ void MainWindow::onCustomFilterApplied()
         }
     }
 
+//    qDebug() << "WORK:" << omp_get_wtime() - t;
+
     m_edit_history->add(*m_showed_image);
     m_intermediate_image.clear();
     m_intermediate_image.reset(new QImage(m_showed_image->copy()));
     this->updateView();
     this->setSavedStatus(false);
     this->updateUndoRedoStatus();
-    this->writeActionName(tr("Custom filter"));
 }

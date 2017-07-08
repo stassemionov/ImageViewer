@@ -63,27 +63,36 @@ const QVector<double> &FilterCustomizer::getMatrixData()
 void FilterCustomizer::onApply()
 {
     int size = this->getMatrixSize();
+    double norm = 0.0;
     for (int i = 0; i < size; ++i)
     {
         for (int j = 0; j < size; ++j)
         {
             bool is_ok = false;
-            QVariant data = ui->tableWidget->item(i, j)->data(Qt::EditRole);
-            m_data[i*size+j] = data.toDouble(&is_ok);
+            QVariant data_var =
+                ui->tableWidget->item(i, j)->data(Qt::EditRole);
+            double data = data_var.toDouble(&is_ok);
             if (!is_ok)
             {
                 this->showErrorMessage(i, j);
                 return;
             }
+            m_data[i*size+j] = data;
+            norm += data;
         }
     }
 
     if (ui->automatically_radioButton->isChecked())
     {
-        double ss = size * size;
+        norm = qAbs(norm);
+        if (norm == 0.0)
+        {
+            this->showErrorMessage(-1, -1);
+            return;
+        }
         for (int i = 0; i < m_data.size(); ++i)
         {
-            m_data[i] /= ss;
+            m_data[i] /= norm;
         }
     }
     else
@@ -103,8 +112,16 @@ void FilterCustomizer::onApply()
 
 void FilterCustomizer::showErrorMessage(int x, int y)
 {
-    ui->message_label->setText(tr("Incorrect data in cell") +
-        QString::fromUtf8(" [%1, %2]").arg(x+1).arg(y+1));
+    if ((x < 0) || (y < 0))
+    {
+        ui->message_label->setText(
+            tr("Chosen norm of matrix equals 0. Normalizing is impossible."));
+    }
+    else
+    {
+        ui->message_label->setText(tr("Incorrect data in cell") +
+            QString::fromUtf8(" [%1, %2]").arg(x+1).arg(y+1));
+    }
     ui->message_label->show();
 }
 
@@ -117,14 +134,11 @@ void FilterCustomizer::onChangeNormalizationMode()
 void FilterCustomizer::showEvent(QShowEvent* e)
 {
     ui->message_label->hide();
-    int size = ui->size_spinBox->value();
-    ui->factor_doubleSpinBox->setValue(size * size);
     e->accept();
 }
 
 void FilterCustomizer::onSizeChanged(int size)
 {
-    ui->factor_doubleSpinBox->setValue(size * size);
     ui->tableWidget->setRowCount(size);
     ui->tableWidget->setColumnCount(size);
     m_data.resize(size*size);
