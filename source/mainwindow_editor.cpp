@@ -3,6 +3,8 @@
 #include "ui_mainwindow.h"
 
 #include <QTransform>
+#include <QPair>
+#include <functional>
 #include <omp.h>
 #include <cmath>
 
@@ -103,7 +105,8 @@ void MainWindow::onRotate(int value)
                 transformed(transform.rotate(m_angle))));
     m_screne_label.setPixmap(QPixmap::fromImage(*m_showed_image));
     this->updateScale();
-    this->setSavedStatus(false);
+    this->setSavedStatus(
+        m_is_saved && ((m_angle == 0.0) || (m_angle == 360.0)));
 }
 
 void MainWindow::onRestoreOriginalAngle()
@@ -260,7 +263,7 @@ void MainWindow::onRedEdited(int dif)
         return;
     }
 
-    convertToColoured(*m_intermediate_image);
+    ImageViewerService::convertToColoured(*m_intermediate_image);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -300,7 +303,7 @@ void MainWindow::onGreenEdited(int dif)
         return;
     }
 
-    convertToColoured(*m_intermediate_image);
+    ImageViewerService::convertToColoured(*m_intermediate_image);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -341,7 +344,7 @@ void MainWindow::onBlueEdited(int dif)
         return;
     }
 
-    convertToColoured(*m_intermediate_image);
+    ImageViewerService::convertToColoured(*m_intermediate_image);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -428,7 +431,7 @@ void MainWindow::onBrightnessEdited(int dif)
         return;
     }
 
-    convertToColoured(*m_intermediate_image);
+    ImageViewerService::convertToColoured(*m_intermediate_image);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -470,7 +473,7 @@ void MainWindow::onUncolourized()
         return;
     }
 
-//    convertToColoured(*m_intermediate_image);
+//    ImageViewerService::convertToColoured(*m_intermediate_image);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -542,7 +545,9 @@ void MainWindow::onLinearSmoothing()
     {
         return;
     }
-    int mat_size = 2 * ui->edit_linear_blur_spinBox->value() + 1;
+
+    int radius = ui->edit_linear_blur_spinBox->value();
+    int mat_size = 2 * radius + 1;
     double el = 1.0 / (mat_size * mat_size);
     QVector<double> mat_data(mat_size * mat_size);
 
@@ -556,10 +561,10 @@ void MainWindow::onLinearSmoothing()
     this->applyMatrixFilter(mat_data, mat_size);
     this->writeActionName(tr("Linear blur") +
         QString::fromUtf8(" %1 px").
-        arg(ui->edit_linear_blur_spinBox->value()));
+        arg(radius));
 }
 
-void MainWindow::onGaussFilterAppying()
+void MainWindow::onGaussFilterApplying()
 {
     if (m_intermediate_image.isNull())
     {
@@ -595,12 +600,233 @@ void MainWindow::onGaussFilterAppying()
         QString::fromUtf8(" %1 px").arg(radius));
 }
 
+void MainWindow::onMedianFilterApplying()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    ImageViewerService::convertToColoured(*m_intermediate_image);
+
+    int radius = ui->edit_median_filter_spinBox->value();
+    int mat_size = 2 * radius + 1;
+    int median_index = (mat_size * mat_size) / 2;
+    QVector<QPair<int,QRgb> > neigh_points(mat_size * mat_size);
+    auto op_less = [](QPair<int,QRgb> p1, QPair<int,QRgb> p2) -> bool
+                        {return p1.first < p2.first;};
+    auto my_sort = std::bind(
+            qSort<QVector<QPair<int,QRgb> >::iterator, typeof(op_less)>,
+            std::placeholders::_1, std::placeholders::_2,
+            op_less);
+    QImage temp_image = ImageViewerService::getExpandedImage(
+                *m_intermediate_image, radius);
+
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    const int temp_w = w + 2*radius;
+    m_showed_image.clear();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
+
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            temp_image.scanLine(radius));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for\
+            firstprivate(neigh_points)\
+            schedule(dynamic, h/omp_get_num_threads())
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            int alpha = qAlpha(src_colors_line[i*temp_w + radius + j]);
+            if (alpha == 0)
+            {
+                continue;
+            }
+
+            int pos = 0;
+            QRgb temp_col;
+            for (int ii = -radius; ii <= radius; ++ii)
+            {
+                for (int jj = -radius; jj <= radius; ++jj)
+                {
+                    temp_col = src_colors_line[(i+ii)*temp_w + radius+(j+jj)];
+                    neigh_points[pos++] = qMakePair(
+                        qRed(temp_col) + qGreen(temp_col) + qBlue(temp_col),
+                        temp_col);
+                }
+            }
+
+            my_sort(neigh_points.begin(), neigh_points.end());
+            temp_col = neigh_points[median_index].second;
+
+            dst_colors_line[i*w+j] = qRgba(
+                qRed(temp_col), qGreen(temp_col), qBlue(temp_col), alpha);
+        }
+    }
+
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
+    this->updateView();
+    this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
+    this->writeActionName(tr("Median filter") +
+        QString::fromUtf8(" %1 px").
+        arg(radius));
+}
+
+
+void MainWindow::onDilatationFilterApplying()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    ImageViewerService::convertToColoured(*m_intermediate_image);
+
+    int radius = ui->edit_morphology_spinBox->value();
+    QImage temp_image = ImageViewerService::getExpandedImage(
+                *m_intermediate_image, radius);
+
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    const int temp_w = w + 2*radius;
+    m_showed_image.clear();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
+
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            temp_image.scanLine(radius));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for schedule(dynamic, h/omp_get_num_threads())
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            int alpha = qAlpha(src_colors_line[i*temp_w + radius + j]);
+            if (alpha == 0)
+            {
+                continue;
+            }
+
+            int color_sum, max_color_sum = 0;
+            QRgb temp_col, max_col = 0;
+            for (int ii = -radius; ii <= radius; ++ii)
+            {
+                for (int jj = -radius; jj <= radius; ++jj)
+                {
+                    temp_col = src_colors_line[(i+ii)*temp_w + radius+(j+jj)];
+                    color_sum = qRed(temp_col) + qGreen(temp_col) + qBlue(temp_col);
+                    if (color_sum > max_color_sum)
+                    {
+                        max_col = temp_col;
+                        max_color_sum = color_sum;
+                    }
+                }
+            }
+
+            dst_colors_line[i*w+j] = qRgba(
+                qRed(max_col), qGreen(max_col), qBlue(max_col), alpha);
+        }
+    }
+
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
+    this->updateView();
+    this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
+    this->writeActionName(tr("Dilatation filter") +
+        QString::fromUtf8(" %1 px").
+        arg(radius));
+}
+
+void MainWindow::onErosionFilterApplying()
+{
+    if (m_intermediate_image.isNull())
+    {
+        return;
+    }
+
+    ImageViewerService::convertToColoured(*m_intermediate_image);
+
+    int radius = ui->edit_morphology_spinBox->value();
+    QImage temp_image = ImageViewerService::getExpandedImage(
+                *m_intermediate_image, radius);
+
+    const int w = m_intermediate_image->width();
+    const int h = m_intermediate_image->height();
+    const int temp_w = w + 2*radius;
+    m_showed_image.clear();
+    m_showed_image.reset(new QImage(m_intermediate_image->size(),
+                           m_intermediate_image->format()));
+
+    QRgb* src_colors_line = reinterpret_cast<QRgb*>(
+            temp_image.scanLine(radius));
+    QRgb* dst_colors_line = reinterpret_cast<QRgb*>(
+            m_showed_image->scanLine(0));
+
+    #pragma omp parallel for schedule(dynamic, h/omp_get_num_threads())
+    for (int i = 0; i < h; ++i)
+    {
+        for (int j = 0; j < w; ++j)
+        {
+            int alpha = qAlpha(src_colors_line[i*temp_w + radius + j]);
+            if (alpha == 0)
+            {
+                continue;
+            }
+
+            int color_sum, min_color_sum = 1000;
+            QRgb temp_col, min_col = 0;
+            for (int ii = -radius; ii <= radius; ++ii)
+            {
+                for (int jj = -radius; jj <= radius; ++jj)
+                {
+                    temp_col = src_colors_line[(i+ii)*temp_w + radius+(j+jj)];
+                    color_sum = qRed(temp_col) + qGreen(temp_col) + qBlue(temp_col);
+                    if (color_sum < min_color_sum)
+                    {
+                        min_col = temp_col;
+                        min_color_sum = color_sum;
+                    }
+                }
+            }
+
+            dst_colors_line[i*w+j] = qRgba(
+                qRed(min_col), qGreen(min_col), qBlue(min_col), alpha);
+        }
+    }
+
+    m_edit_history->add(*m_showed_image);
+    m_intermediate_image.clear();
+    m_intermediate_image.reset(new QImage(m_showed_image->copy()));
+    this->updateView();
+    this->setSavedStatus(false);
+    this->updateUndoRedoStatus();
+    this->writeActionName(tr("Erosion filter") +
+        QString::fromUtf8(" %1 px").
+        arg(radius));
+}
+
 void MainWindow::onCustomFilterApplied()
 {
+    this->onCustomFilterUpdated();
     this->applyMatrixFilter(
         m_filter_customizer->getMatrixData(),
         m_filter_customizer->getMatrixSize());
     this->writeActionName(tr("Custom filter"));
+}
+
+void MainWindow::onCustomFilterUpdated()
+{
     ui->edit_custom_filter_apply_button->setEnabled(true);
 }
 
@@ -632,10 +858,11 @@ void MainWindow::onClarityIncreasing()
 void MainWindow::applyMatrixFilter(
         const QVector<double>& mat_data, int mat_size)
 {
-    convertToColoured(*m_intermediate_image);
+    ImageViewerService::convertToColoured(*m_intermediate_image);
 
     int radius = mat_size / 2;
-    QImage temp_image = getExpandedImage(*m_intermediate_image, radius);
+    QImage temp_image = ImageViewerService::getExpandedImage(
+                *m_intermediate_image, radius);
 
     const int w = m_intermediate_image->width();
     const int h = m_intermediate_image->height();
@@ -662,7 +889,7 @@ void MainWindow::applyMatrixFilter(
                 continue;
             }
 
-            RgbColor dst_col{0.0, 0.0, 0.0};
+            ImageViewerService::RgbColor dst_col{0.0, 0.0, 0.0};
             for (int ii = -radius; ii <= radius; ++ii)
             {
                 for (int jj = -radius; jj <= radius; ++jj)

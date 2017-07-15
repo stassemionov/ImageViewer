@@ -88,6 +88,13 @@
      <item>
       <widget class="QPushButton" name="cancel_button">
        <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="close_button">
+       <property name="text">
         <string>Close</string>
        </property>
       </widget>
@@ -145,6 +152,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="norms_names_comboBox">
+        <property name="toolTip">
+         <string>Choose type of matrix norma</string>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -155,12 +165,17 @@
         </item>
         <item>
          <property name="text">
+          <string>Summa of absolute values</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Euclid norm</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Maximum item</string>
+          <string>Maximum absolute value</string>
          </property>
         </item>
        </widget>

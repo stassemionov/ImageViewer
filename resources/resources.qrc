@@ -36,5 +36,7 @@
 		<file>custom_filter_icon.png</file>
 		<file>clarity_icon.png</file>
 		<file>warning_icon.png</file>
+		<file>expansion_icon.png</file>
+		<file>erosion_icon.png</file>
     </qresource>
 </RCC>

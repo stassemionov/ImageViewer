@@ -39,6 +39,7 @@ public:
 protected slots:
     void onOpenSettings();
     void onCustomFilterApplied();
+    void onCustomFilterUpdated();
 
     void onMouseEnterOnImage();
     void onMouseLeaveOnImage();
@@ -82,8 +83,11 @@ protected slots:
     void onUncolourized();
     void onNegatived();
     void onLinearSmoothing();
-    void onGaussFilterAppying();
+    void onGaussFilterApplying();
+    void onMedianFilterApplying();
     void onClarityIncreasing();
+    void onDilatationFilterApplying();
+    void onErosionFilterApplying();
     void onCustomizeFilter();
 
     void onRotateLeft();
@@ -121,8 +125,6 @@ private:
 
     // Application mode ('Mode_View' by default).
     AppMode m_mode;
-    // Image which is currently showing.
-    QImage m_main_image;
     // Image that is currently on the screen.
     QSharedPointer<QImage> m_showed_image;
     // Image that is intermediate result of editor's work.

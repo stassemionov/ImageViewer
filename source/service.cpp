@@ -7,6 +7,9 @@
 
 #include <QDebug>
 
+namespace ImageViewerService
+{
+
 QString loadTextFileData(const QString& filepath)
 {
     QFile file{filepath};
@@ -86,6 +89,7 @@ QImage getExpandedImage(const QImage& image, int dif)
     return new_image;
 }
 
+}
 //typedef struct RgbColor
 //{
 //    unsigned char r;

@@ -406,6 +406,29 @@ QSharedPointer<QImage> EditHistory::getCurrentVersion()
             new QImage(m_list[m_local_pointer]->copy()));
 }
 
+QSharedPointer<QImage> EditHistory::getOriginal()
+{
+    // History is empty.
+    if (m_list.isEmpty())
+    {
+        return QSharedPointer<QImage>();
+    }
+
+    if (m_shift == 0)
+    {
+        return QSharedPointer<QImage>(
+                new QImage(m_list.front()->copy()));
+    }
+    else
+    {
+        return QSharedPointer<QImage>(
+                new QImage(QString::fromUtf8("%0/%1__%2").
+                    arg(m_storage_dir).
+                    arg(0).
+                    arg(m_filename)));
+    }
+}
+
 int EditHistory::getCurrentIndex()
 {
     return m_shift + m_local_pointer;

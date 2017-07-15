@@ -265,7 +265,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->edit_blur_button, SIGNAL(clicked(bool)),
             this, SLOT(onLinearSmoothing()));
     connect(ui->edit_gauss_filter_button, SIGNAL(clicked(bool)),
-            this, SLOT(onGaussFilterAppying()));
+            this, SLOT(onGaussFilterApplying()));
+    connect(ui->edit_median_filter_button, SIGNAL(clicked(bool)),
+            this, SLOT(onMedianFilterApplying()));
+    connect(ui->edit_dilatation_button, SIGNAL(clicked(bool)),
+            this, SLOT(onDilatationFilterApplying()));
+    connect(ui->edit_erosion_button, SIGNAL(clicked(bool)),
+            this, SLOT(onErosionFilterApplying()));
     connect(ui->edit_custom_filter_button, SIGNAL(clicked(bool)),
             this, SLOT(onCustomizeFilter()));
     connect(ui->edit_clarity_button, SIGNAL(clicked(bool)),
@@ -283,8 +289,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 QApplication::desktop()->width() / 2 - w / 2,
                 QApplication::desktop()->height() / 2 - h / 2,
                 w, h);
-    connect(&(*m_filter_customizer), SIGNAL(matrixUpdated()),
+    connect(&(*m_filter_customizer), SIGNAL(matrixApplied()),
             this, SLOT(onCustomFilterApplied()));
+    connect(&(*m_filter_customizer), SIGNAL(matrixUpdated()),
+            this, SLOT(onCustomFilterUpdated()));
     connect(ui->edit_custom_filter_apply_button, SIGNAL(clicked(bool)),
             this, SLOT(onCustomFilterApplied()));
 
@@ -379,7 +387,8 @@ void MainWindow::onOpenRecentFile()
 
 bool MainWindow::loadImage(const QString& file_name)
 {
-    if (!m_main_image.load(file_name))
+    QImage temp_image{file_name};
+    if (temp_image.isNull())
     {
         return false;
     }
@@ -389,7 +398,7 @@ bool MainWindow::loadImage(const QString& file_name)
     QFileInfo finfo(file_name);
     m_edit_history->clean();
     m_edit_history->setFileName(finfo.fileName());
-    m_edit_history->add(m_main_image);
+    m_edit_history->add(temp_image);
     m_history_stringlist.clear();
     this->writeActionName(tr("Original"));
 
@@ -428,9 +437,9 @@ bool MainWindow::loadImage(const QString& file_name)
     ui->edit_hist_label->setPixmap(QPixmap());
 
     m_intermediate_image = QSharedPointer<QImage>(
-                new QImage(m_main_image.copy()));
+                new QImage(temp_image.copy()));
     m_showed_image = QSharedPointer<QImage>(
-                new QImage(m_main_image.copy()));
+                new QImage(temp_image.copy()));
     m_screne_label.setPixmap(QPixmap::fromImage(*m_showed_image));
 
     m_pos_label.setText(QString::fromUtf8(""));
@@ -563,7 +572,11 @@ void MainWindow::closeEvent(QCloseEvent *pEvent)
             QPixmap(QString::fromUtf8(":/wonna_save.png")).scaledToHeight(100));
         msgBox.setText(tr("You made some changes in the image"));
         msgBox.setInformativeText(tr("Do you want to save your changes?"));
-        msgBox.setDetailedText(tr("There will be something interesting soon..."));
+
+        QString det_text = tr("Current history:") + QString::fromUtf8("\n");
+        det_text += m_history_stringlist.join(QString::fromUtf8("\n"));
+
+        msgBox.setDetailedText(det_text);
         msgBox.setStandardButtons(
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
@@ -701,10 +714,11 @@ void MainWindow::onPrintPicture()
 
 void MainWindow::onShowProperties()
 {
-    if (m_main_image.isNull())
+    if (m_intermediate_image.isNull())
     {
         return;
     }
+    QSharedPointer<QImage> im = m_edit_history->getOriginal();
 
     Ui::ImagePrpertiesDialog* dialog = new Ui::ImagePrpertiesDialog;
     QDialog* dial = new QDialog(this);
@@ -716,16 +730,16 @@ void MainWindow::onShowProperties()
     dialog->prop_format_lbl->setText(
         m_current_image_fileinfo.completeSuffix().toUpper());
     dialog->prop_heigth_lbl->setText(
-        QString::number(m_main_image.height()) + tr(" pixels"));
+        QString::number(im->height()) + tr(" pixels"));
     dialog->prop_width_lbl->setText(
-        QString::number(m_main_image.width()) + tr(" pixels"));
+        QString::number(im->width()) + tr(" pixels"));
     dialog->prop_name_lbl->setText(
         m_current_image_fileinfo.completeBaseName());
     dialog->prop_value_lbl->setText(
         QString::number((double)m_current_image_fileinfo.size() / 1024,
             char('f'), 1) + tr(" Kb"));
 
-    QImage sc_image = m_main_image.scaledToWidth(100);
+    QImage sc_image = im->scaledToWidth(100);
     if (sc_image.height() > 160)
     {
         sc_image = sc_image.scaledToHeight(160);
@@ -769,7 +783,8 @@ void MainWindow::configureInfoWidget()
         QString::fromUtf8(":/main_icon.png")).scaled(h/2, h/2));
     l->setFixedSize(h/2, h/2);
     hlayout->addWidget(l);
-    QLabel* textlabel = new QLabel(loadTextFileData(info_path));
+    QLabel* textlabel = new QLabel(
+        ImageViewerService::loadTextFileData(info_path));
     textlabel->setLayout(new QHBoxLayout);
     textlabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     textlabel->setFrameShape(QFrame::NoFrame);

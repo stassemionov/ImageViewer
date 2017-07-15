@@ -50,6 +50,8 @@ public:
     QSharedPointer<QImage> getLatestVersion();
     // Get copy of current version.
     QSharedPointer<QImage> getCurrentVersion();
+    // Get mostly earlyer version (original).
+    QSharedPointer<QImage> getOriginal();
     // Get index of current version.
     int getCurrentIndex();
 

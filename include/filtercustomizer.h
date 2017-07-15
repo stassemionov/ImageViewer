@@ -21,6 +21,7 @@ public:
     const QVector<double>& getMatrixData();
 
 signals:
+    void matrixApplied();
     void matrixUpdated();
 
 protected:
@@ -28,15 +29,21 @@ protected:
 
 protected slots:
     void onApply();
+    void onClose();
+    void onCancel();
     void onSizeChanged(int size);
     void onChangeNormalizationMode();
 
 protected:
     void showErrorMessage(int x, int y);
+    bool updateData();
+    void saveState();
+    void restoreState();
 
 private:
     Ui::FilterCustomizer *ui;
     QVector<double> m_data;
+    QMap<QString, QVariant> m_state_data;
 };
 
 #endif // FILTERCUSTOMIZER_H
